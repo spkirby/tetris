@@ -1,7 +1,8 @@
-#include <time.h>
-#include <stdlib.h>
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+#include <ctime>
+#include <cstdlib>
+#include <cstdio>
+#include "SDL.h"
+#include "SDL_mixer.h"
 #include "Game.h"
 #include "Graphics.h"
 #include "Sound.h"
@@ -16,7 +17,6 @@ int main(int argc, char *argv[])
 		Graphics::init();
 		Sound::init();
 
-		SDL_WM_SetCaption("Tetris", NULL);
 		srand((unsigned int)time(NULL));
 
 		Game theGame;

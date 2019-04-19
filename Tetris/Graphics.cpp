@@ -1,11 +1,12 @@
 #include "Graphics.h"
 #include "Shape.h"
 #include <stdio.h>
-#include <SDL/SDL.h>
+#include "SDL.h"
 
-SDL_Surface* Graphics::screen = NULL;
+SDL_Window* Graphics::window = NULL;
+SDL_Renderer* Graphics::renderer = NULL;
 SDL_Surface* Graphics::icon   = NULL;
-SDL_Surface* Graphics::images[NUM_OF_IMAGES];
+SDL_Texture* Graphics::images[NUM_OF_IMAGES];
 SDL_Rect Graphics::digitRects[10] =
 {
 	{   2, 0, 56, 43 },
@@ -22,11 +23,10 @@ SDL_Rect Graphics::digitRects[10] =
 
 void Graphics::init()
 {
-	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_DEPTH, SDL_HWSURFACE | SDL_DOUBLEBUF);
-	setIcon();
+    SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
+    SDL_SetWindowTitle(window, "Tetris");
 
-	if(!screen)
-		throw SDL_GetError();
+	setIcon();
 
 	// Fill image pointer array with NULLs
 	for(int i=0; i < NUM_OF_IMAGES; i++)
@@ -39,7 +39,7 @@ void Graphics::shutdown()
 {
 	for(int i=0; i < NUM_OF_IMAGES; i++)
 	{
-		SDL_FreeSurface(images[i]);
+        SDL_DestroyTexture(images[i]);
 		images[i] = NULL;
 	}
 
@@ -49,8 +49,8 @@ void Graphics::shutdown()
 void Graphics::setIcon()
 {
 	icon = loadImageFile("gfx/icon.bmp");
-	SDL_SetColorKey(icon, SDL_SRCCOLORKEY, SDL_MapRGB(icon->format, 255, 255, 255));
-	SDL_WM_SetIcon(icon, NULL);
+	SDL_SetColorKey(icon, SDL_TRUE, SDL_MapRGB(icon->format, 255, 255, 255));
+	SDL_SetWindowIcon(window, icon);
 }
 
 void Graphics::loadImages()
@@ -58,23 +58,23 @@ void Graphics::loadImages()
 	int blockSize = Shape::BLOCK_SIZE;
 
 	SDL_Surface* blocks = loadImageFile("gfx/blocks.bmp");
-	images[BLOCK_EMPTY] = getSubImage(blocks, blockSize * 0, 0, blockSize, blockSize);
-	images[BLOCK_I]     = getSubImage(blocks, blockSize * 1, 0, blockSize, blockSize);
-	images[BLOCK_J]     = getSubImage(blocks, blockSize * 2, 0, blockSize, blockSize);
-	images[BLOCK_L]     = getSubImage(blocks, blockSize * 3, 0, blockSize, blockSize);
-	images[BLOCK_O]     = getSubImage(blocks, blockSize * 4, 0, blockSize, blockSize);
-	images[BLOCK_S]     = getSubImage(blocks, blockSize * 5, 0, blockSize, blockSize);
-	images[BLOCK_T]     = getSubImage(blocks, blockSize * 6, 0, blockSize, blockSize);
-	images[BLOCK_Z]     = getSubImage(blocks, blockSize * 7, 0, blockSize, blockSize);
-	images[BOUNDARY]    = getSubImage(blocks, blockSize * 8, 0, blockSize, blockSize);
+	images[BLOCK_EMPTY] = getSubTexture(blocks, blockSize * 0, 0, blockSize, blockSize);
+	images[BLOCK_I]     = getSubTexture(blocks, blockSize * 1, 0, blockSize, blockSize);
+	images[BLOCK_J]     = getSubTexture(blocks, blockSize * 2, 0, blockSize, blockSize);
+	images[BLOCK_L]     = getSubTexture(blocks, blockSize * 3, 0, blockSize, blockSize);
+	images[BLOCK_O]     = getSubTexture(blocks, blockSize * 4, 0, blockSize, blockSize);
+	images[BLOCK_S]     = getSubTexture(blocks, blockSize * 5, 0, blockSize, blockSize);
+	images[BLOCK_T]     = getSubTexture(blocks, blockSize * 6, 0, blockSize, blockSize);
+	images[BLOCK_Z]     = getSubTexture(blocks, blockSize * 7, 0, blockSize, blockSize);
+	images[BOUNDARY]    = getSubTexture(blocks, blockSize * 8, 0, blockSize, blockSize);
 	SDL_FreeSurface(blocks);
 
-	images[STATUS_LINES] = loadImageFile("gfx/lines.bmp");
-	images[STATUS_LEVEL] = loadImageFile("gfx/level.bmp");
-	images[STATUS_SCORE] = loadImageFile("gfx/score.bmp");
-	images[STATUS_NEXT]  = loadImageFile("gfx/next.bmp");
-	images[DIGITS]       = loadImageFile("gfx/digits.bmp");
-	images[LOGO]         = loadImageFile("gfx/logo.bmp");
+	images[STATUS_LINES] = loadTexture("gfx/lines.bmp");
+	images[STATUS_LEVEL] = loadTexture("gfx/level.bmp");
+	images[STATUS_SCORE] = loadTexture("gfx/score.bmp");
+	images[STATUS_NEXT]  = loadTexture("gfx/next.bmp");
+	images[DIGITS]       = loadTexture("gfx/digits.bmp");
+	images[LOGO]         = loadTexture("gfx/logo.bmp");
 }
 
 
@@ -83,43 +83,66 @@ SDL_Surface* Graphics::loadImageFile(const char* filename)
 	SDL_Surface *raw, *image;
 
 	if( ( raw   = SDL_LoadBMP(filename)  ) == NULL ||
-		( image = SDL_DisplayFormat(raw) ) == NULL )
+		( image = SDL_ConvertSurfaceFormat(raw, SDL_GetWindowPixelFormat(window), 0) ) == NULL )
 		throw SDL_GetError();
 
 	SDL_FreeSurface(raw);
 	return image;
 }
 
-
-SDL_Surface* Graphics::getSubImage(SDL_Surface *src, int x, int y, int w, int h)
+SDL_Texture* Graphics::loadTexture(const char* filename)
 {
-	SDL_Surface *sub;
-	SDL_Rect srcRect  = {x, y, w, h};
-	SDL_Rect destRect = {0, 0, 0, 0};
+    SDL_Surface *surface = loadImageFile(filename);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
 
-	sub = SDL_CreateRGBSurface(SDL_HWSURFACE, w, h, src->format->BitsPerPixel,
-		src->format->Rmask, src->format->Gmask,
-		src->format->Bmask, src->format->Amask);
+    return texture;
+}
 
-	if(sub)
-		SDL_BlitSurface(src, &srcRect, sub, &destRect);
-	else
-		throw SDL_GetError();
+SDL_Texture* Graphics::getSubTexture(SDL_Surface *src, int x, int y, int w, int h)
+{
+    SDL_Surface *subSurface = SDL_CreateRGBSurface(
+        0,
+        w,
+        h,
+        src->format->BitsPerPixel,
+        src->format->Rmask,
+        src->format->Gmask,
+        src->format->Bmask,
+        src->format->Amask);
 
-	return sub;
+    if (subSurface == NULL)
+    {
+        throw SDL_GetError();
+    }
+
+    SDL_Rect srcRect = { x, y, w, h };
+    SDL_Rect destRect = { 0, 0, 0, 0 };
+    SDL_BlitSurface(src, &srcRect, subSurface, &destRect);
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, subSurface);
+    SDL_FreeSurface(subSurface);
+
+    return texture;
 }
 
 
 void Graphics::clear(Uint8 r, Uint8 g, Uint8 b)
 {
-	SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, r, g, b));
+    SDL_RenderClear(renderer);
+	//SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, r, g, b));
 }
 
 
 void Graphics::draw(ImageID imageIndex, int x, int y)
 {
-	SDL_Rect dest = { x, y, 0, 0 };
-	SDL_BlitSurface(images[imageIndex], NULL, screen, &dest);
+    Uint32 format;
+    int access;
+    int w, h;
+    SDL_QueryTexture(images[imageIndex], &format, &access, &w, &h);
+
+	SDL_Rect dest = { x, y, w, h };
+    SDL_RenderCopy(renderer, images[imageIndex], NULL, &dest);
 }
 
 
@@ -138,7 +161,7 @@ void Graphics::drawNumber(int num, int x, int y)
 	for(int i=0; buffer[i]; i++)
 	{
 		int index = buffer[i] - '0';
-		SDL_BlitSurface(images[DIGITS], &digitRects[index], screen, &dest);
+        SDL_RenderCopy(renderer, images[DIGITS], &digitRects[index], &dest);
 		dest.x += digitRects[index].w + 4;
 	}
 }
@@ -146,5 +169,5 @@ void Graphics::drawNumber(int num, int x, int y)
 
 void Graphics::redraw()
 {
-	SDL_Flip(screen);
+    SDL_RenderPresent(renderer);
 }

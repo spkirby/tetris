@@ -1,14 +1,14 @@
+#include <cstdlib>
 #include "Game.h"
 #include "Graphics.h"
 #include "Sound.h"
 #include "Shape.h"
-#include "SDL/SDL.h"
+#include "SDL.h"
 
 Game::Game()
 {
 	eventHandler = new GameEventHandler(this);
-	keystate = SDL_GetKeyState(NULL);
-	SDL_EnableKeyRepeat(1, 1);
+	keystate = SDL_GetKeyboardState(NULL);
 
 	state = STATE_NOTSTARTED;
 	currentShape = nextShape = NULL;
@@ -43,14 +43,14 @@ void Game::start()
 
 			if(state != STATE_QUITTING)
 			{
-				state = STATE_TITLE;				
+				state = STATE_TITLE;
 				redraw();
 
 				do // Wait until no keys are pressed
 				{
 					eventHandler->handleEvents();
 				}
-				while(eventHandler->isKeyDown(keystate));
+				while(eventHandler->isAnyKeyDown(keystate));
 			}
 		}
 	}
@@ -97,28 +97,28 @@ void Game::play()
 			{
 				bool hasMoved = false;
 
-				if(keystate[SDLK_a] && canRotate)
+				if(isKeyDown(SDLK_a) && canRotate)
 				{
 					hasMoved = currentShape->rotateLeft();
 					if(hasMoved)
 						Sound::play(Sound::ROTATE);
 					canRotate = false;
 				}
-				else if( (keystate[SDLK_s] || keystate[SDLK_UP]) && canRotate)
+				else if((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && canRotate)
 				{
 					hasMoved = currentShape->rotateRight();
 					if(hasMoved)
 						Sound::play(Sound::ROTATE);
 					canRotate = false;
 				}
-				else if(keystate[SDLK_LEFT])
+				else if(isKeyDown(SDLK_LEFT))
 					hasMoved = currentShape->moveLeft();
-				else if(keystate[SDLK_RIGHT])
+				else if(isKeyDown(SDLK_RIGHT))
 					hasMoved = currentShape->moveRight();
-				else if(keystate[SDLK_DOWN])
+				else if(isKeyDown(SDLK_DOWN))
 					framesUntilFall = 0;
 
-				if(!keystate[SDLK_a] && !keystate[SDLK_s] && !keystate[SDLK_UP])
+				if(!isKeyDown(SDLK_a) && !isKeyDown(SDLK_s) && !isKeyDown(SDLK_UP))
 					canRotate = true;
 
 				if(hasMoved)
@@ -238,4 +238,10 @@ void Game::redraw()
 	Graphics::drawNumber(score, 100, 600);
 
 	Graphics::redraw();
+}
+
+
+bool Game::isKeyDown(SDL_Keycode keycode)
+{
+    return keystate[SDL_GetScancodeFromKey(keycode)] != 0;
 }

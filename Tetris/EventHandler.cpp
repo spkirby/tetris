@@ -1,6 +1,6 @@
 #include "EventHandler.h"
 #include "Game.h"
-#include <SDL/SDL.h>
+#include "SDL.h"
 
 EventHandler::EventHandler(Game* parentObj)
 {

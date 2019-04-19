@@ -2,7 +2,7 @@
 #define GAME_H
 
 #include "Shape.h"
-#include <SDL/SDL.h>
+#include "SDL.h"
 
 class Game
 {
@@ -32,15 +32,15 @@ protected:
 			parent = parentObj;
 		}
 
-		bool isKeyDown(Uint8* keystate)
+		bool isAnyKeyDown(const Uint8* keystate)
 		{
-			bool keyDown = false;
+            for (int i = 0; i <= SDL_NUM_SCANCODES; i++)
+            {
+                if (keystate[i] != 0)
+                    return true;
+            }
 
-			for(int i = SDLK_FIRST; i <= SDLK_LAST; i++)
-				if(keystate[i] != 0)
-					keyDown = true;
-
-			return keyDown;
+			return false;
 		}
 
 		void handleEvents()
@@ -64,7 +64,7 @@ protected:
 								parent->state = STATE_TITLE;
 								break;
 						
-							case SDLK_F4:
+                            case SDLK_F4:
 								if(event.key.keysym.mod & KMOD_ALT)
 									parent->state = STATE_QUITTING;
 								break;
@@ -76,10 +76,6 @@ protected:
 							default:
 								parent->keyPressed = true;
 						}
-						break;
-
-					case SDL_VIDEOEXPOSE:
-						parent->redraw();
 						break;
 				}
 			}
@@ -107,12 +103,13 @@ protected:
 	PlayField field;
 
 	Shape *currentShape, *nextShape;
-	Uint8 *keystate;
+	const Uint8 *keystate;
 	bool canRotate;
 
 	void startFrame();
 	void endFrame();
 	void reset();
+    bool isKeyDown(SDL_Keycode keycode);
 };
 
 #endif // GAME_H

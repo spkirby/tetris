@@ -1,3 +1,4 @@
+#include <cstring>
 #include "PlayField.h"
 #include "Graphics.h"
 #include "Shape.h"

@@ -1,7 +1,7 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
-#include <SDL/SDL.h>
+#include "SDL.h"
 
 class Graphics
 {
@@ -35,12 +35,12 @@ public:
 
 	static const int SCREEN_WIDTH  = 1024;
 	static const int SCREEN_HEIGHT = 768;
-	static const int SCREEN_DEPTH  = 32;
 
 protected:
-	static SDL_Surface* screen;  // The framebuffer surface
+    static SDL_Window* window;
+    static SDL_Renderer* renderer;
 	static SDL_Surface* icon;
-	static SDL_Surface* images[NUM_OF_IMAGES];
+	static SDL_Texture* images[NUM_OF_IMAGES];
 	static SDL_Rect digitRects[10];
 
 private:
@@ -48,7 +48,8 @@ private:
 	static void setIcon();
 	static void loadImages();
 	static SDL_Surface* loadImageFile(const char* filename);
-	static SDL_Surface* getSubImage(SDL_Surface *src, int x, int y, int w, int h);
+    static SDL_Texture* loadTexture(const char* filename);
+	static SDL_Texture* getSubTexture(SDL_Surface *src, int x, int y, int w, int h);
 };
 
 #endif // GRAPHICS_H
