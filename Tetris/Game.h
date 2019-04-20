@@ -1,7 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "Graphics.h"
 #include "Shape.h"
+#include "Sound.h"
 #include "SDL.h"
 
 class Game
@@ -17,7 +19,7 @@ protected:
 	};
 
 public:
-	Game();
+	Game(Graphics& graphics, Sound& sound);
 	virtual ~Game();
 	void start();
 	void play();
@@ -88,6 +90,9 @@ protected:
 	static const int FRAMES_PER_SECOND  = 25;
 	static const int INITIAL_FALL_DELAY = 20;
 	static const int MOVEMENT_RECHARGE_TIME = 2;
+
+    Graphics& graphics;
+    Sound& sound;
 
 	bool keyPressed;
 	State state;

@@ -1,11 +1,15 @@
 #include <cstdlib>
+#include "enums.h"
 #include "Game.h"
 #include "Graphics.h"
 #include "Sound.h"
 #include "Shape.h"
 #include "SDL.h"
 
-Game::Game()
+Game::Game(Graphics& graphics, Sound& sound) :
+    graphics(graphics),
+    sound(sound),
+    field(PlayField(graphics))
 {
 	eventHandler = new GameEventHandler(this);
 	keystate = SDL_GetKeyboardState(NULL);
@@ -37,7 +41,7 @@ void Game::start()
 
 		if(keyPressed)
 		{
-			Sound::play(Sound::START);
+			sound.play(START);
 			reset();
 			play();
 
@@ -70,11 +74,11 @@ void Game::reset()
 
 	if(currentShape)
 		delete currentShape;
-	currentShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), &field);
+	currentShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
 
 	if(nextShape)
 		delete nextShape;
-	nextShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), &field);
+	nextShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
 
 	field.reset();
 }
@@ -87,7 +91,7 @@ void Game::play()
 	while(state == STATE_INGAME)
 	{
 		startFrame();
-		Graphics::clear(0, 0, 0);
+		graphics.clear(0, 0, 0);
 
 		eventHandler->handleEvents();
 
@@ -101,14 +105,14 @@ void Game::play()
 				{
 					hasMoved = currentShape->rotateLeft();
 					if(hasMoved)
-						Sound::play(Sound::ROTATE);
+						sound.play(ROTATE);
 					canRotate = false;
 				}
 				else if((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && canRotate)
 				{
 					hasMoved = currentShape->rotateRight();
 					if(hasMoved)
-						Sound::play(Sound::ROTATE);
+						sound.play(ROTATE);
 					canRotate = false;
 				}
 				else if(isKeyDown(SDLK_LEFT))
@@ -137,9 +141,9 @@ void Game::play()
 						int completeLines = field.checkForLines(currentShape);
 
 						if(completeLines > 0)
-							Sound::play(Sound::LINE);
+							sound.play(LINE);
 						else
-							Sound::play(Sound::THUD);
+							sound.play(THUD);
 
 						switch(completeLines)
 						{
@@ -167,7 +171,7 @@ void Game::play()
 					else // Shape is outside the well - game over!
 					{
 						state = STATE_GAMEOVER;
-						Sound::play(Sound::GAMEOVER);
+						sound.play(GAMEOVER);
 					}
 
 					delete currentShape;
@@ -181,11 +185,11 @@ void Game::play()
 		if(currentShape == NULL  &&  field.isAnimating() == false)
 		{
 			currentShape = nextShape;
-			nextShape    = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), &field);
+			nextShape    = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
 		}
 
 		if(field.update())
-			Sound::play(Sound::THUD);
+			sound.play(THUD);
 
 		redraw();
 		endFrame();
@@ -223,21 +227,21 @@ void Game::redraw()
 	else if(state == STATE_TITLE)
 	{
 		field.drawOutline();
-		Graphics::draw(Graphics::LOGO, 582, 242);
+		graphics.draw(LOGO, 582, 242);
 	}
 
-	Graphics::draw(Graphics::STATUS_NEXT, 100, 50);
+	graphics.draw(STATUS_NEXT, 100, 50);
 
-	Graphics::draw(Graphics::STATUS_LINES, 100, 250);
-	Graphics::drawNumber(totalLines, 100, 300);
+	graphics.draw(STATUS_LINES, 100, 250);
+	graphics.drawNumber(totalLines, 100, 300);
 
-	Graphics::draw(Graphics::STATUS_LEVEL, 100, 400);
-	Graphics::drawNumber(level, 100, 450);
+	graphics.draw(STATUS_LEVEL, 100, 400);
+	graphics.drawNumber(level, 100, 450);
 
-	Graphics::draw(Graphics::STATUS_SCORE, 100, 550);
-	Graphics::drawNumber(score, 100, 600);
+	graphics.draw(STATUS_SCORE, 100, 550);
+	graphics.drawNumber(score, 100, 600);
 
-	Graphics::redraw();
+	graphics.redraw();
 }
 
 

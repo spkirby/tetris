@@ -3,13 +3,14 @@
 
 class PlayField;
 
+#include "Graphics.h"
 #include "Shape.h"
 #include "structs.h"
 
 class PlayField
 {
 public:
-	PlayField();
+	PlayField(Graphics& graphics);
 	void draw();
 	void drawOutline();
 	bool update();
@@ -30,6 +31,7 @@ protected:
 
 	static const int DEFAULT_ANIM_TIME = 24;
 
+    Graphics& graphics;
 	Point screenPos;
 	int field[FIELD_HEIGHT][FIELD_WIDTH];
 	int animationTime;  // Amount of time for which the field will animate

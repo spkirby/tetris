@@ -110,6 +110,7 @@ xcopy "$(ProjectDir)SDL*.dll" "$(TargetDir)" /y </Command>
     <ClCompile Include="Sound.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="enums.h" />
     <ClInclude Include="EventHandler.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics.h" />

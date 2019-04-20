@@ -207,13 +207,14 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
 };
 
 
-Shape::Shape(ShapeType type, PlayField *field)
+Shape::Shape(ShapeType type, PlayField &field, Graphics &graphics) :
+    parentField(field),
+    graphics(graphics)
 {
 	shapeType   = type;
-	parentField = field;
 	rotation    = 0;
 
-	fieldPos = parentField->getScreenPos();
+	fieldPos = parentField.getScreenPos();
 
 	gridPos.x = (PlayField::FIELD_WIDTH / 2) - 2;
 	gridPos.y = (type == SHAPE_I) ? 1 : 2;
@@ -222,7 +223,7 @@ Shape::Shape(ShapeType type, PlayField *field)
 
 bool Shape::moveLeft()
 {
-	if( parentField->checkValidMove(gridPos.x-1, gridPos.y, shapes[shapeType][rotation]) )
+	if( parentField.checkValidMove(gridPos.x-1, gridPos.y, shapes[shapeType][rotation]) )
 	{
 		gridPos.x--;
 		return true;
@@ -234,7 +235,7 @@ bool Shape::moveLeft()
 
 bool Shape::moveRight()
 {
-	if( parentField->checkValidMove(gridPos.x+1, gridPos.y, shapes[shapeType][rotation]) )
+	if( parentField.checkValidMove(gridPos.x+1, gridPos.y, shapes[shapeType][rotation]) )
 	{
 		gridPos.x++;
 		return true;
@@ -246,7 +247,7 @@ bool Shape::moveRight()
 
 bool Shape::moveDown()
 {
-	if( parentField->checkValidMove(gridPos.x, gridPos.y+1, shapes[shapeType][rotation]) )
+	if( parentField.checkValidMove(gridPos.x, gridPos.y+1, shapes[shapeType][rotation]) )
 	{
 		gridPos.y++;
 		return true;
@@ -260,7 +261,7 @@ bool Shape::rotateLeft()
 {
 	int newRot = (rotation == 0) ? 3 : (rotation-1);
 
-	if( parentField->checkValidMove(gridPos.x, gridPos.y, shapes[shapeType][newRot]) )
+	if( parentField.checkValidMove(gridPos.x, gridPos.y, shapes[shapeType][newRot]) )
 	{
 		rotation = newRot;
 		return true;
@@ -274,7 +275,7 @@ bool Shape::rotateRight()
 {
 	int newRot = (rotation+1) % 4;
 
-	if( parentField->checkValidMove(gridPos.x, gridPos.y, shapes[shapeType][newRot]) )
+	if( parentField.checkValidMove(gridPos.x, gridPos.y, shapes[shapeType][newRot]) )
 	{
 		rotation = newRot;
 		return true;
@@ -286,7 +287,7 @@ bool Shape::rotateRight()
 
 bool Shape::stop()
 {
-	return parentField->absorbShape(gridPos, shapes[shapeType][rotation]);
+	return parentField.absorbShape(gridPos, shapes[shapeType][rotation]);
 }
 
 
@@ -300,7 +301,7 @@ void Shape::draw()
 		for(int x=0; x<4; x++)
 		{
 			if(shapes[shapeType][rotation][y][x] && gridPos.y + y >= PlayField::FIELD_VIS_TOP)
-				Graphics::draw((Graphics::ImageID)shapes[shapeType][rotation][y][x], screenPos.x + (x * BLOCK_SIZE), screenPos.y + (y * BLOCK_SIZE));
+				graphics.draw((ImageId)shapes[shapeType][rotation][y][x], screenPos.x + (x * BLOCK_SIZE), screenPos.y + (y * BLOCK_SIZE));
 		}
 }
 
@@ -311,7 +312,7 @@ void Shape::draw(int screenX, int screenY)
 		for(int x=0; x<4; x++)
 		{
 			if(shapes[shapeType][rotation][y][x])
-				Graphics::draw((Graphics::ImageID)shapes[shapeType][rotation][y][x], screenX + (x * BLOCK_SIZE), screenY + (y * BLOCK_SIZE));
+				graphics.draw((ImageId)shapes[shapeType][rotation][y][x], screenX + (x * BLOCK_SIZE), screenY + (y * BLOCK_SIZE));
 		}
 }
 
