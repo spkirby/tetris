@@ -1,9 +1,18 @@
 #ifndef SOUND_H
 #define SOUND_H
 
-#include "enums.h"
 #include "SDL.h"
 #include "SDL_mixer.h"
+
+enum SoundId
+{
+    THUD = 0,
+    ROTATE,
+    LINE,
+    START,
+    GAMEOVER,
+    NUM_OF_SOUNDS
+};
 
 class Sound
 {

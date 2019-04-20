@@ -1,5 +1,4 @@
 #include <cstdlib>
-#include "enums.h"
 #include "Game.h"
 #include "Graphics.h"
 #include "Sound.h"

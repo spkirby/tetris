@@ -2,7 +2,26 @@
 #define GRAPHICS_H
 
 #include "SDL.h"
-#include "enums.h"
+
+enum ImageId
+{
+    BLOCK_EMPTY = 0, // Must be zero
+    BLOCK_I,
+    BLOCK_J,
+    BLOCK_L,
+    BLOCK_O,
+    BLOCK_S,
+    BLOCK_T,
+    BLOCK_Z,
+    BOUNDARY,
+    STATUS_LINES,
+    STATUS_LEVEL,
+    STATUS_SCORE,
+    STATUS_NEXT,
+    DIGITS,
+    LOGO,
+    NUM_OF_IMAGES
+};
 
 class Graphics
 {

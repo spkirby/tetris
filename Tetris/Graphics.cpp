@@ -2,7 +2,6 @@
 #include "Graphics.h"
 #include "Shape.h"
 #include "SDL.h"
-#include "enums.h"
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
