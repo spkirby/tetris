@@ -35,14 +35,14 @@ public:
     void redraw();
 
 protected:
+    static SDL_Rect digitRects[10];
+    static const int SCREEN_WIDTH = 1024;
+    static const int SCREEN_HEIGHT = 768;
+
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Surface* icon;
     SDL_Texture* images[NUM_OF_IMAGES];
-    SDL_Rect digitRects[10];
-
-    static const int SCREEN_WIDTH = 1024;
-    static const int SCREEN_HEIGHT = 768;
 
     void setIcon();
     void loadImages();

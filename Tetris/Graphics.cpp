@@ -7,7 +7,7 @@ SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Surface* icon = NULL;
 SDL_Texture* images[NUM_OF_IMAGES] = { nullptr };
-SDL_Rect digitRects[10] =
+SDL_Rect Graphics::digitRects[10] =
 {
     {   2, 0, 56, 43 },
     {  67, 0, 40, 43 },
@@ -157,7 +157,10 @@ void Graphics::drawNumber(int num, int x, int y)
     for(int i=0; buffer[i]; i++)
     {
         int index = buffer[i] - '0';
-        SDL_RenderCopy(renderer, images[DIGITS], &digitRects[index], &dest);
+        SDL_Rect* digitRect = &digitRects[index];
+        dest.w = digitRect->w;
+        dest.h = digitRect->h;
+        SDL_RenderCopy(renderer, images[DIGITS], digitRect, &dest);
         dest.x += digitRects[index].w + 4;
     }
 }
