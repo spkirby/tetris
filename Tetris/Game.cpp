@@ -80,6 +80,7 @@ void Game::reset()
 	nextShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
 
 	field.reset();
+    graphics.clear(0, 0, 0);
 }
 
 

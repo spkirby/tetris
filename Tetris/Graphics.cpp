@@ -1,12 +1,10 @@
 #include <cstdio>
+#include <cmath>
 #include "Graphics.h"
 #include "Shape.h"
 #include "SDL.h"
 
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
-SDL_Surface* icon = NULL;
-SDL_Texture* images[NUM_OF_IMAGES] = { nullptr };
+// Static member. Position and size of digit graphics.
 SDL_Rect Graphics::digitRects[10] =
 {
     {   2, 0, 56, 43 },
@@ -127,8 +125,8 @@ SDL_Texture* Graphics::getSubTexture(SDL_Surface *src, int x, int y, int w, int 
 
 void Graphics::clear(Uint8 r, Uint8 g, Uint8 b)
 {
+    SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
-    //SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, r, g, b));
 }
 
 void Graphics::draw(ImageId imageIndex, int x, int y)
@@ -146,15 +144,16 @@ void Graphics::drawNumber(int num, int x, int y)
 {
     if(num < 0)
         throw "Invalid number";
-    else if(num > 999999)
+
+    if (num > 999999)
         num = 999999;
 
     SDL_Rect dest = { x, y };
 
     char buffer[7]; // "999999\0"
-    sprintf(buffer, "%d", num);
+    snprintf(buffer, sizeof(buffer), "%d", num);
 
-    for(int i=0; buffer[i]; i++)
+    for(int i = 0; buffer[i]; i++)
     {
         int index = buffer[i] - '0';
         SDL_Rect* digitRect = &digitRects[index];

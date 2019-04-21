@@ -1,8 +1,6 @@
 #include "SDL_mixer.h"
 #include "Sound.h"
 
-Mix_Chunk* sounds[NUM_OF_SOUNDS] = { nullptr };
-
 Sound::Sound()
 {
     if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) != 0)

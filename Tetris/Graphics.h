@@ -39,10 +39,10 @@ protected:
     static const int SCREEN_WIDTH = 1024;
     static const int SCREEN_HEIGHT = 768;
 
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    SDL_Surface* icon;
-    SDL_Texture* images[NUM_OF_IMAGES];
+    SDL_Window* window = nullptr;
+    SDL_Renderer* renderer = nullptr;
+    SDL_Surface* icon = nullptr;
+    SDL_Texture* images[NUM_OF_IMAGES] = { nullptr };
 
     void setIcon();
     void loadImages();

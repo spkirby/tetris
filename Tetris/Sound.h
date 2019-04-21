@@ -19,13 +19,13 @@ class Sound
 public:
     Sound();
     ~Sound();
-
-    Mix_Chunk* loadSound(char* filename);
     void play(SoundId soundIndex);
     void stopAll();
 
 protected:
-    Mix_Chunk* sounds[NUM_OF_SOUNDS];
+    Mix_Chunk* sounds[NUM_OF_SOUNDS] = { nullptr };
+
+    Mix_Chunk* loadSound(char* filename);
 };
 
 #endif
