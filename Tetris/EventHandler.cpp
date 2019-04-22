@@ -4,23 +4,23 @@
 
 EventHandler::EventHandler(Game* parentObj)
 {
-	parent = parentObj;
+    parent = parentObj;
 }
 
 
 void EventHandler::handleEvents()
 {
-	SDL_Event event;
+    SDL_Event event;
 
-	while(SDL_PollEvent(&event))
-	{
-		switch(event.type)
-		{
-			case SDL_QUIT:
-				break;
-		}
+    while(SDL_PollEvent(&event))
+    {
+        switch(event.type)
+        {
+            case SDL_QUIT:
+                break;
+        }
 
-		// keyboard messages
-		// notify parent object
-	}
+        // keyboard messages
+        // notify parent object
+    }
 }

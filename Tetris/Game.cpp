@@ -10,238 +10,238 @@ Game::Game(Graphics& graphics, Sound& sound) :
     sound(sound),
     field(PlayField(graphics))
 {
-	eventHandler = new GameEventHandler(this);
-	keystate = SDL_GetKeyboardState(NULL);
+    eventHandler = new GameEventHandler(this);
+    keystate = SDL_GetKeyboardState(NULL);
 
-	state = STATE_NOT_STARTED;
-	currentShape = nextShape = NULL;
-	timePerFrame = 1000 / FRAMES_PER_SECOND;
-	fallDelay = INITIAL_FALL_DELAY;
+    state = STATE_NOT_STARTED;
+    currentShape = nextShape = NULL;
+    timePerFrame = 1000 / FRAMES_PER_SECOND;
+    fallDelay = INITIAL_FALL_DELAY;
 }
 
 
 Game::~Game()
 {
-	if(currentShape) delete currentShape;
-	if(nextShape) delete nextShape;
-	delete eventHandler;
+    if(currentShape) delete currentShape;
+    if(nextShape) delete nextShape;
+    delete eventHandler;
 }
 
 
 void Game::start()
 {
-	state = STATE_TITLE;
-	reset();
-	redraw();
+    state = STATE_TITLE;
+    reset();
+    redraw();
 
-	while(state != STATE_QUITTING)
-	{
-		eventHandler->handleEvents();
+    while(state != STATE_QUITTING)
+    {
+        eventHandler->handleEvents();
 
-		if(keyPressed)
-		{
-			sound.play(SOUND_START);
-			reset();
-			play();
+        if(keyPressed)
+        {
+            sound.play(SOUND_START);
+            reset();
+            play();
 
-			if(state != STATE_QUITTING)
-			{
-				state = STATE_TITLE;
-				redraw();
+            if(state != STATE_QUITTING)
+            {
+                state = STATE_TITLE;
+                redraw();
 
-				do // Wait until no keys are pressed
-				{
-					eventHandler->handleEvents();
-				}
-				while(eventHandler->isAnyKeyDown(keystate));
-			}
-		}
-	}
+                do // Wait until no keys are pressed
+                {
+                    eventHandler->handleEvents();
+                }
+                while(eventHandler->isAnyKeyDown(keystate));
+            }
+        }
+    }
 
-	state = STATE_NOT_STARTED;
+    state = STATE_NOT_STARTED;
 }
 
 
 void Game::reset()
 {
-	framesUntilFall = fallDelay;
-	framesUntilMove = MOVEMENT_RECHARGE_TIME;
-	linesThisLevel  = totalLines = 0;
-	level = 1;
-	score = 0;
-	canRotate = true;
+    framesUntilFall = fallDelay;
+    framesUntilMove = MOVEMENT_RECHARGE_TIME;
+    linesThisLevel  = totalLines = 0;
+    level = 1;
+    score = 0;
+    canRotate = true;
 
-	if(currentShape)
-		delete currentShape;
-	currentShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
+    if(currentShape)
+        delete currentShape;
+    currentShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
 
-	if(nextShape)
-		delete nextShape;
-	nextShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
+    if(nextShape)
+        delete nextShape;
+    nextShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
 
-	field.reset();
+    field.reset();
     graphics.clear(0, 0, 0);
 }
 
 
 void Game::play()
 {
-	state = STATE_IN_GAME;
+    state = STATE_IN_GAME;
 
-	while(state == STATE_IN_GAME)
-	{
-		startFrame();
-		graphics.clear(0, 0, 0);
+    while(state == STATE_IN_GAME)
+    {
+        startFrame();
+        graphics.clear(0, 0, 0);
 
-		eventHandler->handleEvents();
+        eventHandler->handleEvents();
 
-		if(currentShape)
-		{
-			if(framesUntilMove == 0)
-			{
-				bool hasMoved = false;
+        if(currentShape)
+        {
+            if(framesUntilMove == 0)
+            {
+                bool hasMoved = false;
 
-				if(isKeyDown(SDLK_a) && canRotate)
-				{
-					hasMoved = currentShape->rotateLeft();
-					if(hasMoved)
-						sound.play(SOUND_ROTATE);
-					canRotate = false;
-				}
-				else if((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && canRotate)
-				{
-					hasMoved = currentShape->rotateRight();
-					if(hasMoved)
-						sound.play(SOUND_ROTATE);
-					canRotate = false;
-				}
-				else if(isKeyDown(SDLK_LEFT))
-					hasMoved = currentShape->moveLeft();
-				else if(isKeyDown(SDLK_RIGHT))
-					hasMoved = currentShape->moveRight();
-				else if(isKeyDown(SDLK_DOWN))
-					framesUntilFall = 0;
+                if(isKeyDown(SDLK_a) && canRotate)
+                {
+                    hasMoved = currentShape->rotateLeft();
+                    if(hasMoved)
+                        sound.play(SOUND_ROTATE);
+                    canRotate = false;
+                }
+                else if((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && canRotate)
+                {
+                    hasMoved = currentShape->rotateRight();
+                    if(hasMoved)
+                        sound.play(SOUND_ROTATE);
+                    canRotate = false;
+                }
+                else if(isKeyDown(SDLK_LEFT))
+                    hasMoved = currentShape->moveLeft();
+                else if(isKeyDown(SDLK_RIGHT))
+                    hasMoved = currentShape->moveRight();
+                else if(isKeyDown(SDLK_DOWN))
+                    framesUntilFall = 0;
 
-				if(!isKeyDown(SDLK_a) && !isKeyDown(SDLK_s) && !isKeyDown(SDLK_UP))
-					canRotate = true;
+                if(!isKeyDown(SDLK_a) && !isKeyDown(SDLK_s) && !isKeyDown(SDLK_UP))
+                    canRotate = true;
 
-				if(hasMoved)
-					framesUntilMove = MOVEMENT_RECHARGE_TIME;
-			}
-			else
-				framesUntilMove--;
+                if(hasMoved)
+                    framesUntilMove = MOVEMENT_RECHARGE_TIME;
+            }
+            else
+                framesUntilMove--;
 
 
-			if(framesUntilFall-- == 0)
-			{
-				if(currentShape->moveDown() == false) // Shape has landed
-				{
-					if(currentShape->stop()) // Shape is within the well
-					{
-						int completeLines = field.checkForLines(currentShape);
+            if(framesUntilFall-- == 0)
+            {
+                if(currentShape->moveDown() == false) // Shape has landed
+                {
+                    if(currentShape->stop()) // Shape is within the well
+                    {
+                        int completeLines = field.checkForLines(currentShape);
 
-						if(completeLines > 0)
-							sound.play(SOUND_LINE);
-						else
-							sound.play(SOUND_THUD);
+                        if(completeLines > 0)
+                            sound.play(SOUND_LINE);
+                        else
+                            sound.play(SOUND_THUD);
 
-						switch(completeLines)
-						{
-							 case 1: score += 40   * level; break;
-							 case 2: score += 100  * level; break;
-							 case 3: score += 300  * level; break;
-							 case 4: score += 1200 * level; break;
-							default: break;
-						}
+                        switch(completeLines)
+                        {
+                             case 1: score += 40   * level; break;
+                             case 2: score += 100  * level; break;
+                             case 3: score += 300  * level; break;
+                             case 4: score += 1200 * level; break;
+                            default: break;
+                        }
 
-						totalLines += completeLines;
-						linesThisLevel += completeLines;
+                        totalLines += completeLines;
+                        linesThisLevel += completeLines;
 
-						if(linesThisLevel >= 10)
-						{
-							level++;
-							linesThisLevel -= 10;
+                        if(linesThisLevel >= 10)
+                        {
+                            level++;
+                            linesThisLevel -= 10;
 
-							if(fallDelay > 0)
-								fallDelay -= 2;
-						}
+                            if(fallDelay > 0)
+                                fallDelay -= 2;
+                        }
 
-						framesUntilMove = 0;
-					}
-					else // Shape is outside the well - game over!
-					{
-						state = STATE_GAME_OVER;
-						sound.play(SOUND_GAME_OVER);
-					}
+                        framesUntilMove = 0;
+                    }
+                    else // Shape is outside the well - game over!
+                    {
+                        state = STATE_GAME_OVER;
+                        sound.play(SOUND_GAME_OVER);
+                    }
 
-					delete currentShape;
-					currentShape = NULL;
-				}
+                    delete currentShape;
+                    currentShape = NULL;
+                }
 
-				framesUntilFall = fallDelay;
-			}
-		}
+                framesUntilFall = fallDelay;
+            }
+        }
 
-		if(currentShape == NULL  &&  field.isAnimating() == false)
-		{
-			currentShape = nextShape;
-			nextShape    = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
-		}
+        if(currentShape == NULL  &&  field.isAnimating() == false)
+        {
+            currentShape = nextShape;
+            nextShape    = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
+        }
 
-		if(field.update())
-			sound.play(SOUND_THUD);
+        if(field.update())
+            sound.play(SOUND_THUD);
 
-		redraw();
-		endFrame();
-	}
+        redraw();
+        endFrame();
+    }
 }
 
 
 void Game::startFrame()
 {
-	frameStart = SDL_GetTicks();
+    frameStart = SDL_GetTicks();
 }
 
 
 void Game::endFrame()
 {
-	Uint32 timeLeft = timePerFrame - (SDL_GetTicks() - frameStart);
+    Uint32 timeLeft = timePerFrame - (SDL_GetTicks() - frameStart);
 
-	if(timeLeft > 0 && timeLeft < timePerFrame)
-		SDL_Delay(timeLeft);
+    if(timeLeft > 0 && timeLeft < timePerFrame)
+        SDL_Delay(timeLeft);
 }
 
 
 void Game::redraw()
 {
-	if(state == STATE_IN_GAME)
-	{
-		field.draw();
+    if(state == STATE_IN_GAME)
+    {
+        field.draw();
 
-		if(currentShape)
-			currentShape->draw();
+        if(currentShape)
+            currentShape->draw();
 
-		if(nextShape)
-			nextShape->draw(100, 100);
-	}
-	else if(state == STATE_TITLE)
-	{
-		field.drawOutline();
-		graphics.draw(IMAGE_LOGO, 582, 242);
-	}
+        if(nextShape)
+            nextShape->draw(100, 100);
+    }
+    else if(state == STATE_TITLE)
+    {
+        field.drawOutline();
+        graphics.draw(IMAGE_LOGO, 582, 242);
+    }
 
-	graphics.draw(IMAGE_STATUS_NEXT, 100, 50);
+    graphics.draw(IMAGE_STATUS_NEXT, 100, 50);
 
-	graphics.draw(IMAGE_STATUS_LINES, 100, 250);
-	graphics.drawNumber(totalLines, 100, 300);
+    graphics.draw(IMAGE_STATUS_LINES, 100, 250);
+    graphics.drawNumber(totalLines, 100, 300);
 
-	graphics.draw(IMAGE_STATUS_LEVEL, 100, 400);
-	graphics.drawNumber(level, 100, 450);
+    graphics.draw(IMAGE_STATUS_LEVEL, 100, 400);
+    graphics.drawNumber(level, 100, 450);
 
-	graphics.draw(IMAGE_STATUS_SCORE, 100, 550);
-	graphics.drawNumber(score, 100, 600);
+    graphics.draw(IMAGE_STATUS_SCORE, 100, 550);
+    graphics.drawNumber(score, 100, 600);
 
-	graphics.redraw();
+    graphics.redraw();
 }
 
 

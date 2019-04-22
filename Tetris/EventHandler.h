@@ -6,11 +6,11 @@
 class EventHandler
 {
 public:
-	EventHandler(Game *parentObj);
-	void handleEvents();
+    EventHandler(Game *parentObj);
+    void handleEvents();
 
 protected:
-	Game *parent;
+    Game *parent;
 };
 
 #endif // EVENTHANDLER_H
