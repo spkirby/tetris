@@ -6,11 +6,11 @@ Sound::Sound()
     if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) != 0)
         throw Mix_GetError();
 
-    sounds[THUD] = loadSound("sound/thud.wav");
-    sounds[ROTATE] = loadSound("sound/rotate.wav");
-    sounds[LINE] = loadSound("sound/line.wav");
-    sounds[START] = loadSound("sound/start.wav");
-    sounds[GAMEOVER] = loadSound("sound/gameover.wav");
+    sounds[SOUND_THUD] = loadSound("sound/thud.wav");
+    sounds[SOUND_ROTATE] = loadSound("sound/rotate.wav");
+    sounds[SOUND_LINE] = loadSound("sound/line.wav");
+    sounds[SOUND_START] = loadSound("sound/start.wav");
+    sounds[SOUND_GAME_OVER] = loadSound("sound/gameover.wav");
 }
 
 Sound::~Sound()

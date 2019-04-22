@@ -11,11 +11,11 @@ class Game
 protected:
 	enum State
 	{
-		STATE_NOTSTARTED = 0,
-		STATE_TITLE      = 1,
-		STATE_INGAME     = 2,
-		STATE_GAMEOVER   = 3,
-		STATE_QUITTING   = 4
+		STATE_NOT_STARTED = 0,
+		STATE_TITLE       = 1,
+		STATE_IN_GAME     = 2,
+		STATE_GAME_OVER   = 3,
+		STATE_QUITTING    = 4
 	};
 
 public:

@@ -13,7 +13,7 @@ Game::Game(Graphics& graphics, Sound& sound) :
 	eventHandler = new GameEventHandler(this);
 	keystate = SDL_GetKeyboardState(NULL);
 
-	state = STATE_NOTSTARTED;
+	state = STATE_NOT_STARTED;
 	currentShape = nextShape = NULL;
 	timePerFrame = 1000 / FRAMES_PER_SECOND;
 	fallDelay = INITIAL_FALL_DELAY;
@@ -40,7 +40,7 @@ void Game::start()
 
 		if(keyPressed)
 		{
-			sound.play(START);
+			sound.play(SOUND_START);
 			reset();
 			play();
 
@@ -58,7 +58,7 @@ void Game::start()
 		}
 	}
 
-	state = STATE_NOTSTARTED;
+	state = STATE_NOT_STARTED;
 }
 
 
@@ -86,9 +86,9 @@ void Game::reset()
 
 void Game::play()
 {
-	state = STATE_INGAME;
+	state = STATE_IN_GAME;
 
-	while(state == STATE_INGAME)
+	while(state == STATE_IN_GAME)
 	{
 		startFrame();
 		graphics.clear(0, 0, 0);
@@ -105,14 +105,14 @@ void Game::play()
 				{
 					hasMoved = currentShape->rotateLeft();
 					if(hasMoved)
-						sound.play(ROTATE);
+						sound.play(SOUND_ROTATE);
 					canRotate = false;
 				}
 				else if((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && canRotate)
 				{
 					hasMoved = currentShape->rotateRight();
 					if(hasMoved)
-						sound.play(ROTATE);
+						sound.play(SOUND_ROTATE);
 					canRotate = false;
 				}
 				else if(isKeyDown(SDLK_LEFT))
@@ -141,9 +141,9 @@ void Game::play()
 						int completeLines = field.checkForLines(currentShape);
 
 						if(completeLines > 0)
-							sound.play(LINE);
+							sound.play(SOUND_LINE);
 						else
-							sound.play(THUD);
+							sound.play(SOUND_THUD);
 
 						switch(completeLines)
 						{
@@ -170,8 +170,8 @@ void Game::play()
 					}
 					else // Shape is outside the well - game over!
 					{
-						state = STATE_GAMEOVER;
-						sound.play(GAMEOVER);
+						state = STATE_GAME_OVER;
+						sound.play(SOUND_GAME_OVER);
 					}
 
 					delete currentShape;
@@ -189,7 +189,7 @@ void Game::play()
 		}
 
 		if(field.update())
-			sound.play(THUD);
+			sound.play(SOUND_THUD);
 
 		redraw();
 		endFrame();
@@ -214,7 +214,7 @@ void Game::endFrame()
 
 void Game::redraw()
 {
-	if(state == STATE_INGAME)
+	if(state == STATE_IN_GAME)
 	{
 		field.draw();
 
@@ -227,18 +227,18 @@ void Game::redraw()
 	else if(state == STATE_TITLE)
 	{
 		field.drawOutline();
-		graphics.draw(LOGO, 582, 242);
+		graphics.draw(IMAGE_LOGO, 582, 242);
 	}
 
-	graphics.draw(STATUS_NEXT, 100, 50);
+	graphics.draw(IMAGE_STATUS_NEXT, 100, 50);
 
-	graphics.draw(STATUS_LINES, 100, 250);
+	graphics.draw(IMAGE_STATUS_LINES, 100, 250);
 	graphics.drawNumber(totalLines, 100, 300);
 
-	graphics.draw(STATUS_LEVEL, 100, 400);
+	graphics.draw(IMAGE_STATUS_LEVEL, 100, 400);
 	graphics.drawNumber(level, 100, 450);
 
-	graphics.draw(STATUS_SCORE, 100, 550);
+	graphics.draw(IMAGE_STATUS_SCORE, 100, 550);
 	graphics.drawNumber(score, 100, 600);
 
 	graphics.redraw();

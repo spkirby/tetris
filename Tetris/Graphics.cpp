@@ -56,23 +56,23 @@ void Graphics::loadImages()
     int blockSize = Shape::BLOCK_SIZE;
 
     SDL_Surface* blocks = loadImageFile("gfx/blocks.bmp");
-    images[BLOCK_EMPTY] = getSubTexture(blocks, blockSize * 0, 0, blockSize, blockSize);
-    images[BLOCK_I]     = getSubTexture(blocks, blockSize * 1, 0, blockSize, blockSize);
-    images[BLOCK_J]     = getSubTexture(blocks, blockSize * 2, 0, blockSize, blockSize);
-    images[BLOCK_L]     = getSubTexture(blocks, blockSize * 3, 0, blockSize, blockSize);
-    images[BLOCK_O]     = getSubTexture(blocks, blockSize * 4, 0, blockSize, blockSize);
-    images[BLOCK_S]     = getSubTexture(blocks, blockSize * 5, 0, blockSize, blockSize);
-    images[BLOCK_T]     = getSubTexture(blocks, blockSize * 6, 0, blockSize, blockSize);
-    images[BLOCK_Z]     = getSubTexture(blocks, blockSize * 7, 0, blockSize, blockSize);
-    images[BOUNDARY]    = getSubTexture(blocks, blockSize * 8, 0, blockSize, blockSize);
+    images[IMAGE_BLOCK_EMPTY] = getSubTexture(blocks, blockSize * 0, 0, blockSize, blockSize);
+    images[IMAGE_BLOCK_I]     = getSubTexture(blocks, blockSize * 1, 0, blockSize, blockSize);
+    images[IMAGE_BLOCK_J]     = getSubTexture(blocks, blockSize * 2, 0, blockSize, blockSize);
+    images[IMAGE_BLOCK_L]     = getSubTexture(blocks, blockSize * 3, 0, blockSize, blockSize);
+    images[IMAGE_BLOCK_O]     = getSubTexture(blocks, blockSize * 4, 0, blockSize, blockSize);
+    images[IMAGE_BLOCK_S]     = getSubTexture(blocks, blockSize * 5, 0, blockSize, blockSize);
+    images[IMAGE_BLOCK_T]     = getSubTexture(blocks, blockSize * 6, 0, blockSize, blockSize);
+    images[IMAGE_BLOCK_Z]     = getSubTexture(blocks, blockSize * 7, 0, blockSize, blockSize);
+    images[IMAGE_BOUNDARY]    = getSubTexture(blocks, blockSize * 8, 0, blockSize, blockSize);
     SDL_FreeSurface(blocks);
 
-    images[STATUS_LINES] = loadTexture("gfx/lines.bmp");
-    images[STATUS_LEVEL] = loadTexture("gfx/level.bmp");
-    images[STATUS_SCORE] = loadTexture("gfx/score.bmp");
-    images[STATUS_NEXT]  = loadTexture("gfx/next.bmp");
-    images[DIGITS]       = loadTexture("gfx/digits.bmp");
-    images[LOGO]         = loadTexture("gfx/logo.bmp");
+    images[IMAGE_STATUS_LINES] = loadTexture("gfx/lines.bmp");
+    images[IMAGE_STATUS_LEVEL] = loadTexture("gfx/level.bmp");
+    images[IMAGE_STATUS_SCORE] = loadTexture("gfx/score.bmp");
+    images[IMAGE_STATUS_NEXT]  = loadTexture("gfx/next.bmp");
+    images[IMAGE_DIGITS]       = loadTexture("gfx/digits.bmp");
+    images[IMAGE_LOGO]         = loadTexture("gfx/logo.bmp");
 }
 
 SDL_Surface* Graphics::loadImageFile(const char* filename)
@@ -159,7 +159,7 @@ void Graphics::drawNumber(int num, int x, int y)
         SDL_Rect* digitRect = &digitRects[index];
         dest.w = digitRect->w;
         dest.h = digitRect->h;
-        SDL_RenderCopy(renderer, images[DIGITS], digitRect, &dest);
+        SDL_RenderCopy(renderer, images[IMAGE_DIGITS], digitRect, &dest);
         dest.x += digitRects[index].w + 4;
     }
 }

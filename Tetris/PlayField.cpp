@@ -21,16 +21,16 @@ void PlayField::reset()
 
 	for(int y=0; y < FIELD_HEIGHT-1; y++)
 		for(int x=1; x < FIELD_WIDTH-1; x++)
-			field[y][x] = BLOCK_EMPTY;
+			field[y][x] = IMAGE_BLOCK_EMPTY;
 
 	for(int y=0; y < FIELD_HEIGHT; y++)
 	{
-		field[y][0] = BOUNDARY;
-		field[y][FIELD_WIDTH-1] = BOUNDARY;
+		field[y][0] = IMAGE_BOUNDARY;
+		field[y][FIELD_WIDTH-1] = IMAGE_BOUNDARY;
 	}
 
 	for(int x=1; x < FIELD_WIDTH-1; x++)
-		field[FIELD_HEIGHT-1][x] = BOUNDARY;
+		field[FIELD_HEIGHT-1][x] = IMAGE_BOUNDARY;
 }
 
 
@@ -54,9 +54,9 @@ void PlayField::draw()
 			int imgIndex;
 
 			if(flashLine && x > 0 && x < FIELD_WIDTH - 1)
-				imgIndex = BLOCK_EMPTY;
+				imgIndex = IMAGE_BLOCK_EMPTY;
 			else
-				imgIndex = BLOCK_EMPTY + field[y][x];
+				imgIndex = IMAGE_BLOCK_EMPTY + field[y][x];
 
 			graphics.draw((ImageId)imgIndex,
 				screenPos.x + (x * Shape::BLOCK_SIZE),
@@ -71,9 +71,9 @@ void PlayField::drawOutline()
 	{
 		for(int x=0; x < FIELD_WIDTH; x++)
 		{
-			if(field[y][x] == BOUNDARY)
+			if(field[y][x] == IMAGE_BOUNDARY)
 			{
-				graphics.draw(BOUNDARY,
+				graphics.draw(IMAGE_BOUNDARY,
 					screenPos.x + (x * Shape::BLOCK_SIZE),
 					screenPos.y + ((y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE));
 			}

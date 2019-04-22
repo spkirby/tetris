@@ -6,11 +6,11 @@
 
 enum SoundId
 {
-    THUD = 0,
-    ROTATE,
-    LINE,
-    START,
-    GAMEOVER,
+    SOUND_THUD = 0,
+    SOUND_ROTATE,
+    SOUND_LINE,
+    SOUND_START,
+    SOUND_GAME_OVER,
     NUM_OF_SOUNDS
 };
 

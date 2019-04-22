@@ -5,21 +5,21 @@
 
 enum ImageId
 {
-    BLOCK_EMPTY = 0, // Must be zero
-    BLOCK_I,
-    BLOCK_J,
-    BLOCK_L,
-    BLOCK_O,
-    BLOCK_S,
-    BLOCK_T,
-    BLOCK_Z,
-    BOUNDARY,
-    STATUS_LINES,
-    STATUS_LEVEL,
-    STATUS_SCORE,
-    STATUS_NEXT,
-    DIGITS,
-    LOGO,
+    IMAGE_BLOCK_EMPTY = 0, // Must be zero
+    IMAGE_BLOCK_I,
+    IMAGE_BLOCK_J,
+    IMAGE_BLOCK_L,
+    IMAGE_BLOCK_O,
+    IMAGE_BLOCK_S,
+    IMAGE_BLOCK_T,
+    IMAGE_BLOCK_Z,
+    IMAGE_BOUNDARY,
+    IMAGE_STATUS_LINES,
+    IMAGE_STATUS_LEVEL,
+    IMAGE_STATUS_SCORE,
+    IMAGE_STATUS_NEXT,
+    IMAGE_DIGITS,
+    IMAGE_LOGO,
     NUM_OF_IMAGES
 };
 
