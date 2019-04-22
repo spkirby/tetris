@@ -33,7 +33,7 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
         }
     },
 
-        // J
+    // J
     {
         { // 0
             { 0, 0, 2, 0 },
@@ -61,8 +61,7 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
         }
     },
 
-
-        // L
+    // L
     {
         { // 0
             { 0, 3, 0, 0 },
@@ -91,7 +90,7 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
     },
 
 
-        // O
+    // O
     {
         { // 0
             { 0, 0, 0, 0 },
@@ -119,8 +118,7 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
         }
     },
 
-
-        // S
+    // S
     {
         { // 0
             { 0, 0, 0, 0 },
@@ -148,8 +146,7 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
         }
     },
 
-
-        // T
+    // T
     {
         {
             { 0, 0, 0, 0 },
@@ -177,7 +174,7 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
         }
     },
 
-        // Z
+    // Z
     {
         {
             { 0, 0, 0, 0 },
@@ -207,9 +204,8 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
 };
 
 
-Shape::Shape(ShapeType type, PlayField &field, Graphics &graphics) :
-    parentField(field),
-    graphics(graphics)
+Shape::Shape(ShapeType type, PlayField &field) :
+    parentField(field)
 {
     shapeType   = type;
     rotation    = 0;
@@ -219,7 +215,6 @@ Shape::Shape(ShapeType type, PlayField &field, Graphics &graphics) :
     gridPos.x = (PlayField::FIELD_WIDTH / 2) - 2;
     gridPos.y = (type == SHAPE_I) ? 1 : 2;
 }
-
 
 bool Shape::moveLeft()
 {
@@ -232,7 +227,6 @@ bool Shape::moveLeft()
     return false;
 }
 
-
 bool Shape::moveRight()
 {
     if( parentField.checkValidMove(gridPos.x+1, gridPos.y, shapes[shapeType][rotation]) )
@@ -244,7 +238,6 @@ bool Shape::moveRight()
     return false;
 }
 
-
 bool Shape::moveDown()
 {
     if( parentField.checkValidMove(gridPos.x, gridPos.y+1, shapes[shapeType][rotation]) )
@@ -255,7 +248,6 @@ bool Shape::moveDown()
 
     return false;
 }
-
 
 bool Shape::rotateLeft()
 {
@@ -270,7 +262,6 @@ bool Shape::rotateLeft()
     return false;
 }
 
-
 bool Shape::rotateRight()
 {
     int newRot = (rotation+1) % 4;
@@ -284,14 +275,12 @@ bool Shape::rotateRight()
     return false;
 }
 
-
 bool Shape::stop()
 {
     return parentField.absorbShape(gridPos, shapes[shapeType][rotation]);
 }
 
-
-void Shape::draw()
+void Shape::draw(Graphics &graphics)
 {
     Point screenPos;
     screenPos.x = (gridPos.x * BLOCK_SIZE) + fieldPos.x;
@@ -305,8 +294,7 @@ void Shape::draw()
         }
 }
 
-
-void Shape::draw(int screenX, int screenY)
+void Shape::draw(Graphics &graphics, int screenX, int screenY)
 {
     for(int y=0; y<4; y++)
         for(int x=0; x<4; x++)
@@ -315,7 +303,6 @@ void Shape::draw(int screenX, int screenY)
                 graphics.draw((ImageId)shapes[shapeType][rotation][y][x], screenX + (x * BLOCK_SIZE), screenY + (y * BLOCK_SIZE));
         }
 }
-
 
 Point Shape::getGridPos()
 {

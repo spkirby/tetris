@@ -3,15 +3,13 @@
 #include "Graphics.h"
 #include "Shape.h"
 
-PlayField::PlayField(Graphics& graphics) :
-    graphics(graphics)
+PlayField::PlayField()
 {
     screenPos.x = 550;
     screenPos.y = 50;
 
     reset();
 }
-
 
 void PlayField::reset()
 {
@@ -33,8 +31,7 @@ void PlayField::reset()
         field[FIELD_HEIGHT-1][x] = IMAGE_BOUNDARY;
 }
 
-
-void PlayField::draw()
+void PlayField::draw(Graphics& graphics)
 {
     bool flashLine;
     int ltrIndex = 0;
@@ -65,7 +62,7 @@ void PlayField::draw()
     }
 }
 
-void PlayField::drawOutline()
+void PlayField::drawOutline(Graphics& graphics)
 {
     for(int y=FIELD_HEIGHT-1; y >= FIELD_VIS_TOP; y--)
     {
@@ -86,7 +83,6 @@ Point PlayField::getScreenPos()
     return screenPos;
 }
 
-
 bool PlayField::checkValidMove(int newX, int newY, const int shape[4][4])
 {
     bool valid = true;
@@ -98,7 +94,6 @@ bool PlayField::checkValidMove(int newX, int newY, const int shape[4][4])
 
     return valid;
 }
-
 
 int PlayField::checkForLines(Shape* shape)
 {
@@ -127,7 +122,6 @@ int PlayField::checkForLines(Shape* shape)
     return linesComplete;
 }
 
-
 bool PlayField::isLineComplete(int line)
 {
     bool complete = true;
@@ -139,13 +133,11 @@ bool PlayField::isLineComplete(int line)
     return complete;
 }
 
-
 void PlayField::removeLine(int line)
 {
     memmove(field[1], field[0], sizeof(int) * FIELD_WIDTH * line);
     memset(field[0]+1, 0, FIELD_WIDTH-2);
 }
-
 
 bool PlayField::absorbShape(Point shapePos, const int shape[4][4])
 {
@@ -164,12 +156,10 @@ bool PlayField::absorbShape(Point shapePos, const int shape[4][4])
             return insideField;
 }
 
-
 bool PlayField::isAnimating()
 {
     return (animationTime > 0);
 }
-
 
 bool PlayField::update()
 {

@@ -7,7 +7,7 @@
 #include "Graphics.h"
 #include "Sound.h"
 
-void run()
+void startGame()
 {
     Graphics graphics;
     Sound sound;
@@ -24,11 +24,11 @@ int main(int argc, char *argv[])
             throw SDL_GetError();
 
         srand((unsigned int)time(NULL));
-        run();
+        startGame();
     }
     catch(const char* ex)
     {
-        fprintf(stderr, "An unrecoverable error occured. %s\n", ex);
+        fprintf(stderr, "An unrecoverable error occurred. %s\n", ex);
     }
 
     SDL_Quit();

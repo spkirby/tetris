@@ -7,7 +7,6 @@ EventHandler::EventHandler(Game* parentObj)
     parent = parentObj;
 }
 
-
 void EventHandler::handleEvents()
 {
     SDL_Event event;

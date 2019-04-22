@@ -10,9 +10,9 @@ class PlayField;
 class PlayField
 {
 public:
-    PlayField(Graphics& graphics);
-    void draw();
-    void drawOutline();
+    PlayField();
+    void draw(Graphics& graphics);
+    void drawOutline(Graphics& graphics);
     bool update();
     void reset();
     Point getScreenPos();
@@ -31,7 +31,6 @@ protected:
 
     static const int DEFAULT_ANIM_TIME = 24;
 
-    Graphics& graphics;
     Point screenPos;
     int field[FIELD_HEIGHT][FIELD_WIDTH];
     int animationTime;  // Amount of time for which the field will animate

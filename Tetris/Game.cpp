@@ -7,8 +7,7 @@
 
 Game::Game(Graphics& graphics, Sound& sound) :
     graphics(graphics),
-    sound(sound),
-    field(PlayField(graphics))
+    sound(sound)
 {
     eventHandler = new GameEventHandler(this);
     keystate = SDL_GetKeyboardState(NULL);
@@ -19,14 +18,12 @@ Game::Game(Graphics& graphics, Sound& sound) :
     fallDelay = INITIAL_FALL_DELAY;
 }
 
-
 Game::~Game()
 {
     if(currentShape) delete currentShape;
     if(nextShape) delete nextShape;
     delete eventHandler;
 }
-
 
 void Game::start()
 {
@@ -61,7 +58,6 @@ void Game::start()
     state = STATE_NOT_STARTED;
 }
 
-
 void Game::reset()
 {
     framesUntilFall = fallDelay;
@@ -73,16 +69,15 @@ void Game::reset()
 
     if(currentShape)
         delete currentShape;
-    currentShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
+    currentShape = new Shape((ShapeType)(rand() % ShapeType::NUM_OF_SHAPES), field);
 
     if(nextShape)
         delete nextShape;
-    nextShape = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
+    nextShape = new Shape((ShapeType)(rand() % ShapeType::NUM_OF_SHAPES), field);
 
     field.reset();
     graphics.clear(0, 0, 0);
 }
-
 
 void Game::play()
 {
@@ -185,7 +180,7 @@ void Game::play()
         if(currentShape == NULL  &&  field.isAnimating() == false)
         {
             currentShape = nextShape;
-            nextShape    = new Shape((Shape::ShapeType)(rand() % Shape::NUM_OF_SHAPES), field, graphics);
+            nextShape    = new Shape((ShapeType)(rand() % ShapeType::NUM_OF_SHAPES), field);
         }
 
         if(field.update())
@@ -196,12 +191,10 @@ void Game::play()
     }
 }
 
-
 void Game::startFrame()
 {
     frameStart = SDL_GetTicks();
 }
-
 
 void Game::endFrame()
 {
@@ -211,22 +204,21 @@ void Game::endFrame()
         SDL_Delay(timeLeft);
 }
 
-
 void Game::redraw()
 {
     if(state == STATE_IN_GAME)
     {
-        field.draw();
+        field.draw(graphics);
 
         if(currentShape)
-            currentShape->draw();
+            currentShape->draw(graphics);
 
         if(nextShape)
-            nextShape->draw(100, 100);
+            nextShape->draw(graphics, 100, 100);
     }
     else if(state == STATE_TITLE)
     {
-        field.drawOutline();
+        field.drawOutline(graphics);
         graphics.draw(IMAGE_LOGO, 582, 242);
     }
 
@@ -243,7 +235,6 @@ void Game::redraw()
 
     graphics.redraw();
 }
-
 
 bool Game::isKeyDown(SDL_Keycode keycode)
 {
