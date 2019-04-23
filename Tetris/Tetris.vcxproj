@@ -101,7 +101,6 @@ xcopy "$(ProjectDir)SDL*.dll" "$(TargetDir)" /y </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="main.cpp" />
@@ -110,7 +109,6 @@ xcopy "$(ProjectDir)SDL*.dll" "$(TargetDir)" /y </Command>
     <ClCompile Include="Sound.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EventHandler.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="PlayField.h" />
