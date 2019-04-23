@@ -16,10 +16,11 @@ public:
     bool update();
     void reset();
     Point getScreenPos();
-    bool checkValidMove(int newX, int newY, const int shape[4][4]);
+    bool checkValidMove(int newX, int newY, Shape& shape);
     int checkForLines(Shape *shape);
-    bool absorbShape(Point shapePos, const int shape[4][4]);
+    bool isShapeInsideField(Shape &shape);
     bool isAnimating();
+    void absorbShape(Shape& shape);
 
     static const int FIELD_WIDTH   = 12;
     static const int FIELD_HEIGHT  = 25;

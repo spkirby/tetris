@@ -83,13 +83,13 @@ Point PlayField::getScreenPos()
     return screenPos;
 }
 
-bool PlayField::checkValidMove(int newX, int newY, const int shape[4][4])
+bool PlayField::checkValidMove(int newX, int newY, Shape& shape)
 {
     bool valid = true;
 
     for(int y=0; y<4 && valid; y++)
         for(int x=0; x<4 && valid; x++)
-            if(shape[y][x] && field[newY + y][newX + x])
+            if(!shape.isEmpty(x, y) && field[newY + y][newX + x])
                 valid = false;
 
     return valid;
@@ -139,21 +139,38 @@ void PlayField::removeLine(int line)
     memset(field[0]+1, 0, FIELD_WIDTH-2);
 }
 
-bool PlayField::absorbShape(Point shapePos, const int shape[4][4])
+bool PlayField::isShapeInsideField(Shape &shape)
 {
-    bool insideField = true;
+    Point shapePos = shape.getGridPos();
 
-    for(int y=0; y<4; y++)
-        for(int x=0; x<4; x++)
-            if(shape[y][x])
+    for (int y = 0; y < 4 && (shapePos.y + y < FIELD_VIS_TOP); y++)
+    {
+        for (int x = 0; x < 4; x++)
+        {
+            if (!shape.isEmpty(x, y))
             {
-                field[shapePos.y + y][shapePos.x + x] = shape[y][x];
-
-                if(shapePos.y + y < FIELD_VIS_TOP)
-                    insideField = false;
+                return false;
             }
+        }
+    }
 
-            return insideField;
+    return true;
+}
+
+void PlayField::absorbShape(Shape& shape)
+{
+    Point shapePos = shape.getGridPos();
+
+    for (int y = 0; y < 4; y++)
+    {
+        for (int x = 0; x < 4; x++)
+        {
+            if (!shape.isEmpty(x, y))
+            {
+                field[shapePos.y + y][shapePos.x + x] = shape.getShapeBlock(x, y);
+            }
+        }
+    }
 }
 
 bool PlayField::isAnimating()

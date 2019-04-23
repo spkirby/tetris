@@ -1,7 +1,8 @@
 #include "Shape.h"
 #include "PlayField.h"
 #include "Graphics.h"
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
 {
@@ -203,108 +204,86 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
     }
 };
 
-
-Shape::Shape(ShapeType type, PlayField &field) :
-    parentField(field)
+Shape::Shape(ShapeType type)
 {
     shapeType   = type;
     rotation    = 0;
-
-    fieldPos = parentField.getScreenPos();
-
     gridPos.x = (PlayField::FIELD_WIDTH / 2) - 2;
     gridPos.y = (type == SHAPE_I) ? 1 : 2;
 }
 
-bool Shape::moveLeft()
+Shape* Shape::createRandom()
 {
-    if( parentField.checkValidMove(gridPos.x-1, gridPos.y, shapes[shapeType][rotation]) )
-    {
-        gridPos.x--;
-        return true;
-    }
-
-    return false;
+    return new Shape((ShapeType)(rand() % NUM_OF_SHAPES));
 }
 
-bool Shape::moveRight()
+void Shape::moveLeft()
 {
-    if( parentField.checkValidMove(gridPos.x+1, gridPos.y, shapes[shapeType][rotation]) )
-    {
-        gridPos.x++;
-        return true;
-    }
-
-    return false;
+    gridPos.x--;
 }
 
-bool Shape::moveDown()
+void Shape::moveRight()
 {
-    if( parentField.checkValidMove(gridPos.x, gridPos.y+1, shapes[shapeType][rotation]) )
-    {
-        gridPos.y++;
-        return true;
-    }
-
-    return false;
+    gridPos.x++;
 }
 
-bool Shape::rotateLeft()
+void Shape::moveDown()
 {
-    int newRot = (rotation == 0) ? 3 : (rotation-1);
-
-    if( parentField.checkValidMove(gridPos.x, gridPos.y, shapes[shapeType][newRot]) )
-    {
-        rotation = newRot;
-        return true;
-    }
-
-    return false;
+    gridPos.y++;
 }
 
-bool Shape::rotateRight()
+void Shape::rotateLeft()
 {
-    int newRot = (rotation+1) % 4;
-
-    if( parentField.checkValidMove(gridPos.x, gridPos.y, shapes[shapeType][newRot]) )
-    {
-        rotation = newRot;
-        return true;
-    }
-
-    return false;
+    rotation = (rotation == 0) ? 3 : (rotation - 1);
 }
 
-bool Shape::stop()
+void Shape::rotateRight()
 {
-    return parentField.absorbShape(gridPos, shapes[shapeType][rotation]);
+    rotation = (rotation + 1) % 4;
 }
 
-void Shape::draw(Graphics &graphics)
+void Shape::draw(Graphics &graphics, Point origin)
 {
     Point screenPos;
-    screenPos.x = (gridPos.x * BLOCK_SIZE) + fieldPos.x;
-    screenPos.y = ((gridPos.y - PlayField::FIELD_VIS_TOP) * BLOCK_SIZE) + fieldPos.y;
+    screenPos.x = (gridPos.x * BLOCK_SIZE) + origin.x;
+    screenPos.y = ((gridPos.y - PlayField::FIELD_VIS_TOP) * BLOCK_SIZE) + origin.y;
 
-    for(int y=0; y<4; y++)
-        for(int x=0; x<4; x++)
+    for (int y = 0; y < 4; y++)
+    {
+        for (int x = 0; x < 4; x++)
         {
-            if(shapes[shapeType][rotation][y][x] && gridPos.y + y >= PlayField::FIELD_VIS_TOP)
+            if (shapes[shapeType][rotation][y][x] && gridPos.y + y >= PlayField::FIELD_VIS_TOP)
                 graphics.draw((ImageId)shapes[shapeType][rotation][y][x], screenPos.x + (x * BLOCK_SIZE), screenPos.y + (y * BLOCK_SIZE));
         }
+    }
 }
 
 void Shape::draw(Graphics &graphics, int screenX, int screenY)
 {
-    for(int y=0; y<4; y++)
-        for(int x=0; x<4; x++)
+    for (int y = 0; y < 4; y++)
+    {
+        for (int x = 0; x < 4; x++)
         {
-            if(shapes[shapeType][rotation][y][x])
+            if (shapes[shapeType][rotation][y][x])
                 graphics.draw((ImageId)shapes[shapeType][rotation][y][x], screenX + (x * BLOCK_SIZE), screenY + (y * BLOCK_SIZE));
         }
+    }
 }
 
 Point Shape::getGridPos()
 {
     return gridPos;
+}
+
+int Shape::getShapeBlock(int x, int y)
+{
+    if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT)
+        throw "Out of bounds";
+
+    return shapes[shapeType][rotation][y][x];
+}
+
+bool Shape::isEmpty(int x, int y)
+{
+    return getShapeBlock(x, y) == 0;
 }

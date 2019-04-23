@@ -20,19 +20,25 @@ enum ShapeType
 
 class Shape
 {
-public:   
-    Shape(ShapeType type, PlayField &field);
-    bool moveLeft();
-    bool moveRight();
-    bool moveDown();
-    bool rotateLeft();
-    bool rotateRight();
-    bool stop();
-    void draw(Graphics &graphics);
-    void draw(Graphics &graphics, int screenX, int screenY);
-    Point getGridPos();
-
+public:
+    static const int MAX_WIDTH = 3;
+    static const int MAX_HEIGHT = 3;
     static const int BLOCK_SIZE = 32;
+    
+    static Shape* Shape::createRandom();
+
+    Shape(ShapeType type);
+
+    void moveLeft();
+    void moveRight();
+    void moveDown();
+    void rotateLeft();
+    void rotateRight();
+    void draw(Graphics &graphics, Point origin);
+    void draw(Graphics &graphics, int screenX, int screenY);
+    int getShapeBlock(int x, int y);
+    bool isEmpty(int x, int y);
+    Point getGridPos();
 
 protected:
     // Array containing all rotations of all shapes.
@@ -41,8 +47,6 @@ protected:
 
     int shapeType;
     int rotation;
-    PlayField &parentField;
-    Point fieldPos;
     Point gridPos;
 
 private:

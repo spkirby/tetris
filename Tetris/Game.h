@@ -87,6 +87,12 @@ protected:
         Game *parent;
     };
 
+    enum Direction
+    {
+        DIRECTION_LEFT = -1,
+        DIRECTION_RIGHT = 1
+    };
+
     static const int FRAMES_PER_SECOND  = 25;
     static const int INITIAL_FALL_DELAY = 20;
     static const int MOVEMENT_RECHARGE_TIME = 2;
@@ -109,8 +115,9 @@ protected:
 
     Shape *currentShape, *nextShape;
     const Uint8 *keystate;
-    bool canRotate;
 
+    bool canMoveShape(int xOffset, int yOffset);
+    bool canRotate(Direction direction);
     void startFrame();
     void endFrame();
     void reset();

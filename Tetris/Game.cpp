@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include "Game.h"
 #include "Graphics.h"
 #include "Sound.h"
@@ -65,15 +64,14 @@ void Game::reset()
     linesThisLevel  = totalLines = 0;
     level = 1;
     score = 0;
-    canRotate = true;
 
     if(currentShape)
         delete currentShape;
-    currentShape = new Shape((ShapeType)(rand() % ShapeType::NUM_OF_SHAPES), field);
+    currentShape = Shape::createRandom();
 
     if(nextShape)
         delete nextShape;
-    nextShape = new Shape((ShapeType)(rand() % ShapeType::NUM_OF_SHAPES), field);
+    nextShape = Shape::createRandom();
 
     field.reset();
     graphics.clear(0, 0, 0);
@@ -82,6 +80,7 @@ void Game::reset()
 void Game::play()
 {
     state = STATE_IN_GAME;
+    bool rotateLocked = false;
 
     while(state == STATE_IN_GAME)
     {
@@ -96,43 +95,67 @@ void Game::play()
             {
                 bool hasMoved = false;
 
-                if(isKeyDown(SDLK_a) && canRotate)
+                if(isKeyDown(SDLK_a) && !rotateLocked)
                 {
-                    hasMoved = currentShape->rotateLeft();
-                    if(hasMoved)
+                    if (canRotate(DIRECTION_LEFT))
+                    {
+                        currentShape->rotateLeft();
                         sound.play(SOUND_ROTATE);
-                    canRotate = false;
+                        rotateLocked = true;
+                    }
                 }
-                else if((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && canRotate)
+                else if((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && !rotateLocked)
                 {
-                    hasMoved = currentShape->rotateRight();
-                    if(hasMoved)
+                    if (canRotate(DIRECTION_RIGHT))
+                    {
+                        currentShape->rotateRight();
                         sound.play(SOUND_ROTATE);
-                    canRotate = false;
+                        rotateLocked = true;
+                    }
                 }
-                else if(isKeyDown(SDLK_LEFT))
-                    hasMoved = currentShape->moveLeft();
-                else if(isKeyDown(SDLK_RIGHT))
-                    hasMoved = currentShape->moveRight();
-                else if(isKeyDown(SDLK_DOWN))
+                else if (isKeyDown(SDLK_LEFT) && canMoveShape(-1, 0))
+                {
+                    currentShape->moveLeft();
+                    hasMoved = true;
+                }
+                else if (isKeyDown(SDLK_RIGHT) && canMoveShape(1, 0))
+                {
+                    currentShape->moveRight();
+                    hasMoved = true;
+                }
+                else if (isKeyDown(SDLK_DOWN))
+                {
                     framesUntilFall = 0;
+                }
 
-                if(!isKeyDown(SDLK_a) && !isKeyDown(SDLK_s) && !isKeyDown(SDLK_UP))
-                    canRotate = true;
+                if (!isKeyDown(SDLK_a) && !isKeyDown(SDLK_s) && !isKeyDown(SDLK_UP))
+                {
+                    rotateLocked = false;
+                }
 
-                if(hasMoved)
+                if (hasMoved)
+                {
                     framesUntilMove = MOVEMENT_RECHARGE_TIME;
+                }
             }
             else
+            {
                 framesUntilMove--;
+            }
 
 
             if(framesUntilFall-- == 0)
             {
-                if(currentShape->moveDown() == false) // Shape has landed
+                if (canMoveShape(0, 1))
                 {
-                    if(currentShape->stop()) // Shape is within the well
+                    currentShape->moveDown();
+                }
+                else  // Shape has landed
+                {
+                    if (field.isShapeInsideField(*currentShape))
                     {
+                        field.absorbShape(*currentShape);
+
                         int completeLines = field.checkForLines(currentShape);
 
                         if(completeLines > 0)
@@ -142,10 +165,10 @@ void Game::play()
 
                         switch(completeLines)
                         {
-                             case 1: score += 40   * level; break;
-                             case 2: score += 100  * level; break;
-                             case 3: score += 300  * level; break;
-                             case 4: score += 1200 * level; break;
+                            case 1: score += 40   * level; break;
+                            case 2: score += 100  * level; break;
+                            case 3: score += 300  * level; break;
+                            case 4: score += 1200 * level; break;
                             default: break;
                         }
 
@@ -180,7 +203,7 @@ void Game::play()
         if(currentShape == NULL  &&  field.isAnimating() == false)
         {
             currentShape = nextShape;
-            nextShape    = new Shape((ShapeType)(rand() % ShapeType::NUM_OF_SHAPES), field);
+            nextShape = Shape::createRandom();
         }
 
         if(field.update())
@@ -189,6 +212,27 @@ void Game::play()
         redraw();
         endFrame();
     }
+}
+
+bool Game::canMoveShape(int xOffset, int yOffset)
+{
+    Point pos = currentShape->getGridPos();
+    return field.checkValidMove(pos.x + xOffset, pos.y + yOffset, *currentShape);
+}
+
+bool Game::canRotate(Direction direction)
+{
+    Shape shapeCopy(*currentShape);
+
+    if (direction == DIRECTION_LEFT)
+        shapeCopy.rotateLeft();
+    else
+        shapeCopy.rotateRight();
+
+    Point pos = shapeCopy.getGridPos();
+    bool isValid = field.checkValidMove(pos.x, pos.y, shapeCopy);
+
+    return isValid;
 }
 
 void Game::startFrame()
@@ -211,7 +255,7 @@ void Game::redraw()
         field.draw(graphics);
 
         if(currentShape)
-            currentShape->draw(graphics);
+            currentShape->draw(graphics, field.getScreenPos());
 
         if(nextShape)
             nextShape->draw(graphics, 100, 100);
