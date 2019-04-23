@@ -8,11 +8,10 @@ Game::Game(Graphics& graphics, Sound& sound) :
     graphics(graphics),
     sound(sound)
 {
-    eventHandler = new GameEventHandler(this);
-    keystate = SDL_GetKeyboardState(NULL);
+    keystate = SDL_GetKeyboardState(nullptr);
 
     state = STATE_NOT_STARTED;
-    currentShape = nextShape = NULL;
+    currentShape = nextShape = nullptr;
     timePerFrame = 1000 / FRAMES_PER_SECOND;
     fallDelay = INITIAL_FALL_DELAY;
 }
@@ -21,7 +20,6 @@ Game::~Game()
 {
     if(currentShape) delete currentShape;
     if(nextShape) delete nextShape;
-    delete eventHandler;
 }
 
 void Game::start()
@@ -32,7 +30,7 @@ void Game::start()
 
     while(state != STATE_QUITTING)
     {
-        eventHandler->handleEvents();
+        handleEvents();
 
         if(keyPressed)
         {
@@ -47,9 +45,9 @@ void Game::start()
 
                 do // Wait until no keys are pressed
                 {
-                    eventHandler->handleEvents();
+                    handleEvents();
                 }
-                while(eventHandler->isAnyKeyDown(keystate));
+                while(isAnyKeyDown());
             }
         }
     }
@@ -87,7 +85,7 @@ void Game::play()
         startFrame();
         graphics.clear(0, 0, 0);
 
-        eventHandler->handleEvents();
+        handleEvents();
 
         if(currentShape)
         {
@@ -193,14 +191,14 @@ void Game::play()
                     }
 
                     delete currentShape;
-                    currentShape = NULL;
+                    currentShape = nullptr;
                 }
 
                 framesUntilFall = fallDelay;
             }
         }
 
-        if(currentShape == NULL  &&  field.isAnimating() == false)
+        if(currentShape == nullptr && !field.isAnimating())
         {
             currentShape = nextShape;
             nextShape = Shape::createRandom();
@@ -211,6 +209,44 @@ void Game::play()
 
         redraw();
         endFrame();
+    }
+}
+
+void Game::handleEvents()
+{
+    SDL_Event event;
+    keyPressed = false;
+
+    while (state != STATE_QUITTING && SDL_PollEvent(&event))
+    {
+        // Handle SDL Events
+        switch (event.type)
+        {
+            case SDL_QUIT:
+                state = STATE_QUITTING;
+                break;
+
+            case SDL_KEYDOWN:
+                switch (event.key.keysym.sym)
+                {
+                    case SDLK_ESCAPE:
+                        state = STATE_TITLE;
+                        break;
+
+                    case SDLK_F4:
+                        if (event.key.keysym.mod & KMOD_ALT)
+                            state = STATE_QUITTING;
+                        break;
+
+                    case SDLK_LALT:
+                    case SDLK_RALT:
+                        break;
+
+                    default:
+                        keyPressed = true;
+                }
+                break;
+        }
     }
 }
 
@@ -283,4 +319,15 @@ void Game::redraw()
 bool Game::isKeyDown(SDL_Keycode keycode)
 {
     return keystate[SDL_GetScancodeFromKey(keycode)] != 0;
+}
+
+bool Game::isAnyKeyDown()
+{
+    for (int i = 0; i <= SDL_NUM_SCANCODES; i++)
+    {
+        if (keystate[i] != 0)
+            return true;
+    }
+
+    return false;
 }

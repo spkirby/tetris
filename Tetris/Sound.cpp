@@ -32,7 +32,7 @@ Mix_Chunk* Sound::loadSound(char* filename)
 
 void Sound::play(SoundId soundIndex)
 {
-    if (sounds[soundIndex] != NULL)
+    if (sounds[soundIndex] != nullptr)
     {
         Mix_PlayChannel(-1, sounds[soundIndex], 0);
     }

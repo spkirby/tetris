@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
         if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
             throw SDL_GetError();
 
-        srand((unsigned int)time(NULL));
+        srand((unsigned int)time(nullptr));
         startGame();
     }
     catch(const char* ex)

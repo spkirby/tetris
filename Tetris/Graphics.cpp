@@ -79,8 +79,8 @@ SDL_Surface* Graphics::loadImageFile(const char* filename)
 {
     SDL_Surface *raw, *image;
 
-    if( ( raw   = SDL_LoadBMP(filename)  ) == NULL ||
-        ( image = SDL_ConvertSurfaceFormat(raw, SDL_GetWindowPixelFormat(window), 0) ) == NULL )
+    if( ( raw   = SDL_LoadBMP(filename)  ) == nullptr ||
+        ( image = SDL_ConvertSurfaceFormat(raw, SDL_GetWindowPixelFormat(window), 0) ) == nullptr )
         throw SDL_GetError();
 
     SDL_FreeSurface(raw);
@@ -108,7 +108,7 @@ SDL_Texture* Graphics::getSubTexture(SDL_Surface *src, int x, int y, int w, int 
         src->format->Bmask,
         src->format->Amask);
 
-    if (subSurface == NULL)
+    if (subSurface == nullptr)
     {
         throw SDL_GetError();
     }
@@ -137,7 +137,7 @@ void Graphics::draw(ImageId imageIndex, int x, int y)
     SDL_QueryTexture(images[imageIndex], &format, &access, &w, &h);
 
     SDL_Rect dest = { x, y, w, h };
-    SDL_RenderCopy(renderer, images[imageIndex], NULL, &dest);
+    SDL_RenderCopy(renderer, images[imageIndex], nullptr, &dest);
 }
 
 void Graphics::drawNumber(int num, int x, int y)
