@@ -1,6 +1,4 @@
-#ifndef SOUND_H
-#define SOUND_H
-
+#pragma once
 #include "SDL.h"
 #include "SDL_mixer.h"
 
@@ -27,5 +25,3 @@ protected:
 
     Mix_Chunk* loadSound(char* filename);
 };
-
-#endif

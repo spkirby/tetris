@@ -1,6 +1,4 @@
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
-
+#pragma once
 #include "SDL.h"
 
 enum ImageId
@@ -50,5 +48,3 @@ protected:
     SDL_Texture* loadTexture(const char* filename);
     SDL_Texture* getSubTexture(SDL_Surface *src, int x, int y, int w, int h);
 };
-
-#endif // GRAPHICS_H

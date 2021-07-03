@@ -1,8 +1,4 @@
-#ifndef PLAYFIELD_H
-#define PLAYFIELD_H
-
-class PlayField;
-
+#pragma once
 #include "Graphics.h"
 #include "Shape.h"
 #include "structs.h"
@@ -37,5 +33,3 @@ protected:
     int animationTime;  // Amount of time for which the field will animate
     int linesToRemove[4];
 };
-
-#endif // PLAYFIELD_H

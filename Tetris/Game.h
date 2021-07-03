@@ -1,7 +1,6 @@
-#ifndef GAME_H
-#define GAME_H
-
+#pragma once
 #include "Graphics.h"
+#include "PlayField.h"
 #include "Shape.h"
 #include "Sound.h"
 #include "SDL.h"
@@ -17,6 +16,7 @@ public:
 
 protected:
     static const int FRAMES_PER_SECOND  = 25;
+    static const int TIME_PER_FRAME = 1000 / FRAMES_PER_SECOND;
     static const int INITIAL_FALL_DELAY = 20;
     static const int MOVEMENT_RECHARGE_TIME = 2;
 
@@ -62,5 +62,3 @@ protected:
     void reset();
     bool isKeyDown(SDL_Keycode keycode);
 };
-
-#endif // GAME_H

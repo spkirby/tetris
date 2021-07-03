@@ -1,9 +1,5 @@
-#ifndef SHAPE_H
-#define SHAPE_H
-
-class Shape;
-
-#include "PlayField.h"
+#pragma once
+#include "Graphics.h"
 #include "structs.h"
 
 enum ShapeType
@@ -48,8 +44,4 @@ protected:
     int shapeType;
     int rotation;
     Point gridPos;
-
-private:
 };
-
-#endif // SHAPE_H

@@ -9,10 +9,8 @@ Game::Game(Graphics& graphics, Sound& sound) :
     sound(sound)
 {
     keystate = SDL_GetKeyboardState(nullptr);
-
     state = STATE_NOT_STARTED;
     currentShape = nextShape = nullptr;
-    timePerFrame = 1000 / FRAMES_PER_SECOND;
     fallDelay = INITIAL_FALL_DELAY;
 }
 
@@ -278,9 +276,9 @@ void Game::startFrame()
 
 void Game::endFrame()
 {
-    Uint32 timeLeft = timePerFrame - (SDL_GetTicks() - frameStart);
+    Uint32 timeLeft = TIME_PER_FRAME - (SDL_GetTicks() - frameStart);
 
-    if(timeLeft > 0 && timeLeft < timePerFrame)
+    if(timeLeft > 0 && timeLeft < TIME_PER_FRAME)
         SDL_Delay(timeLeft);
 }
 
