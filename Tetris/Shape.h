@@ -1,6 +1,6 @@
 #pragma once
 #include "Graphics.h"
-#include "structs.h"
+#include "Point.h"
 
 enum ShapeType
 {

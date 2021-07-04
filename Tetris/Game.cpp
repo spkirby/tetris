@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "Graphics.h"
+#include "Point.h"
 #include "Sound.h"
 #include "Shape.h"
 #include "SDL.h"
@@ -12,6 +13,7 @@ Game::Game(Graphics& graphics, Sound& sound) :
     state = STATE_NOT_STARTED;
     currentShape = nextShape = nullptr;
     fallDelay = INITIAL_FALL_DELAY;
+    statusPanel.position = Point(100, 50);
 }
 
 Game::~Game()
@@ -24,7 +26,7 @@ void Game::start()
 {
     state = STATE_TITLE;
     reset();
-    redraw();
+    render();
 
     while(state != STATE_QUITTING)
     {
@@ -39,7 +41,7 @@ void Game::start()
             if(state != STATE_QUITTING)
             {
                 state = STATE_TITLE;
-                redraw();
+                render();
 
                 do // Wait until no keys are pressed
                 {
@@ -57,9 +59,11 @@ void Game::reset()
 {
     framesUntilFall = fallDelay;
     framesUntilMove = MOVEMENT_RECHARGE_TIME;
-    linesThisLevel  = totalLines = 0;
+    linesThisLevel = 0;
+
     level = 1;
     score = 0;
+    totalLines = 0;
 
     if(currentShape)
         delete currentShape;
@@ -205,7 +209,7 @@ void Game::play()
         if(field.update())
             sound.play(SOUND_THUD);
 
-        redraw();
+        render();
         endFrame();
     }
 }
@@ -282,7 +286,7 @@ void Game::endFrame()
         SDL_Delay(timeLeft);
 }
 
-void Game::redraw()
+void Game::render()
 {
     if(state == STATE_IN_GAME)
     {
@@ -300,18 +304,12 @@ void Game::redraw()
         graphics.draw(IMAGE_LOGO, 582, 242);
     }
 
-    graphics.draw(IMAGE_STATUS_NEXT, 100, 50);
+    statusPanel.level = level;
+    statusPanel.score = score;
+    statusPanel.lines = linesThisLevel;
+    statusPanel.render(graphics);
 
-    graphics.draw(IMAGE_STATUS_LINES, 100, 250);
-    graphics.drawNumber(totalLines, 100, 300);
-
-    graphics.draw(IMAGE_STATUS_LEVEL, 100, 400);
-    graphics.drawNumber(level, 100, 450);
-
-    graphics.draw(IMAGE_STATUS_SCORE, 100, 550);
-    graphics.drawNumber(score, 100, 600);
-
-    graphics.redraw();
+    graphics.update();
 }
 
 bool Game::isKeyDown(SDL_Keycode keycode)

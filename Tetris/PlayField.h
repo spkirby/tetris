@@ -1,7 +1,7 @@
 #pragma once
 #include "Graphics.h"
+#include "Point.h"
 #include "Shape.h"
-#include "structs.h"
 
 class PlayField
 {

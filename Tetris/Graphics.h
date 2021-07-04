@@ -1,4 +1,5 @@
 #pragma once
+#include "Point.h"
 #include "SDL.h"
 
 enum ImageId
@@ -28,9 +29,11 @@ public:
     ~Graphics();
 
     void clear(Uint8 r, Uint8 g, Uint8 b);
+    void Graphics::draw(ImageId imageIndex, Point& point);
     void draw(ImageId imageIndex, int x, int y);
+    void drawNumber(int num, Point& point);
     void drawNumber(int num, int x, int y);
-    void redraw();
+    void update();
 
 protected:
     static SDL_Rect digitRects[10];

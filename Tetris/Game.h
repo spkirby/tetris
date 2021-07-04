@@ -3,6 +3,7 @@
 #include "PlayField.h"
 #include "Shape.h"
 #include "Sound.h"
+#include "StatusPanel.h"
 #include "SDL.h"
 
 class Game
@@ -12,7 +13,7 @@ public:
     virtual ~Game();
     void start();
     void play();
-    void redraw();
+    void render();
 
 protected:
     static const int FRAMES_PER_SECOND  = 25;
@@ -49,6 +50,7 @@ protected:
     Uint32 frameStart, timePerFrame;
 
     PlayField field;
+    StatusPanel statusPanel;
 
     Shape *currentShape, *nextShape;
     const Uint8 *keystate;

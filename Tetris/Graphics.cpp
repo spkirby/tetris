@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cmath>
 #include "Graphics.h"
+#include "Point.h"
 #include "Shape.h"
 #include "SDL.h"
 
@@ -129,6 +130,11 @@ void Graphics::clear(Uint8 r, Uint8 g, Uint8 b)
     SDL_RenderClear(renderer);
 }
 
+void Graphics::draw(ImageId imageIndex, Point& point)
+{
+    draw(imageIndex, point.x, point.y);
+}
+
 void Graphics::draw(ImageId imageIndex, int x, int y)
 {
     Uint32 format;
@@ -138,6 +144,11 @@ void Graphics::draw(ImageId imageIndex, int x, int y)
 
     SDL_Rect dest = { x, y, w, h };
     SDL_RenderCopy(renderer, images[imageIndex], nullptr, &dest);
+}
+
+void Graphics::drawNumber(int num, Point& point)
+{
+    drawNumber(num, point.x, point.y);
 }
 
 void Graphics::drawNumber(int num, int x, int y)
@@ -164,7 +175,7 @@ void Graphics::drawNumber(int num, int x, int y)
     }
 }
 
-void Graphics::redraw()
+void Graphics::update()
 {
     SDL_RenderPresent(renderer);
 }
