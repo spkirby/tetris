@@ -1,3 +1,4 @@
+#include "Enums.h"
 #include "Game.h"
 #include "Graphics.h"
 #include "Point.h"

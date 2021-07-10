@@ -1,6 +1,8 @@
-#include "Shape.h"
-#include "PlayField.h"
+#include "Enums.h"
 #include "Graphics.h"
+#include "PlayField.h"
+#include "Point.h"
+#include "Shape.h"
 #include <cstdio>
 #include <cstdlib>
 
@@ -217,29 +219,21 @@ Shape* Shape::createRandom()
     return new Shape((ShapeType)(rand() % NUM_OF_SHAPES));
 }
 
-void Shape::moveLeft()
+void Shape::move(Direction direction)
 {
-    gridPos.x--;
+    gridPos = gridPos + Point(direction);
 }
 
-void Shape::moveRight()
+void Shape::rotate(Direction direction)
 {
-    gridPos.x++;
-}
-
-void Shape::moveDown()
-{
-    gridPos.y++;
-}
-
-void Shape::rotateLeft()
-{
-    rotation = (rotation == 0) ? 3 : (rotation - 1);
-}
-
-void Shape::rotateRight()
-{
-    rotation = (rotation + 1) % 4;
+    if (direction == Direction::Left)
+    {
+        rotation = (rotation == 0) ? 3 : (rotation - 1);
+    }
+    else
+    {
+        rotation = (rotation + 1) % 4;
+    }
 }
 
 void Shape::draw(Graphics &graphics, Point origin)

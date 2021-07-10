@@ -1,4 +1,5 @@
 #pragma once
+#include "Enums.h"
 #include "Graphics.h"
 #include "Point.h"
 
@@ -25,11 +26,8 @@ public:
 
     Shape(ShapeType type);
 
-    void moveLeft();
-    void moveRight();
-    void moveDown();
-    void rotateLeft();
-    void rotateRight();
+    void move(Direction direction);
+    void rotate(Direction direction);
     void draw(Graphics &graphics, Point origin);
     void draw(Graphics &graphics, int screenX, int screenY);
     int getShapeBlock(int x, int y);

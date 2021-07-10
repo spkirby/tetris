@@ -12,7 +12,7 @@ public:
     bool update();
     void reset();
     Point getScreenPos();
-    bool checkValidMove(int newX, int newY, Shape& shape);
+    bool isValidMove(Point& newPosition, Shape& shape);
     int checkForLines(Shape *shape);
     bool isShapeInsideField(Shape &shape);
     bool isAnimating();

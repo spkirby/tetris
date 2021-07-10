@@ -5,6 +5,7 @@
 #include "Sound.h"
 #include "StatusPanel.h"
 #include "SDL.h"
+#include "Enums.h"
 
 class Game
 {
@@ -28,12 +29,6 @@ protected:
         STATE_IN_GAME = 2,
         STATE_GAME_OVER = 3,
         STATE_QUITTING = 4
-    };
-
-    enum Direction
-    {
-        DIRECTION_LEFT = -1,
-        DIRECTION_RIGHT = 1
     };
 
     Graphics& graphics;

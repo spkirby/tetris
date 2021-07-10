@@ -83,16 +83,20 @@ Point PlayField::getScreenPos()
     return screenPos;
 }
 
-bool PlayField::checkValidMove(int newX, int newY, Shape& shape)
+bool PlayField::isValidMove(Point& newPosition, Shape& shape)
 {
-    bool valid = true;
+    for (int y = 0; y < 4; y++)
+    {
+        for (int x = 0; x < 4; x++)
+        {
+            if (!shape.isEmpty(x, y) && field[newPosition.y + y][newPosition.x + x])
+            {
+                return false;
+            }
+        }
+    }
 
-    for(int y=0; y<4 && valid; y++)
-        for(int x=0; x<4 && valid; x++)
-            if(!shape.isEmpty(x, y) && field[newY + y][newX + x])
-                valid = false;
-
-    return valid;
+    return true;
 }
 
 int PlayField::checkForLines(Shape* shape)

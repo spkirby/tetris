@@ -11,9 +11,9 @@ void startGame()
 {
     Graphics graphics;
     Sound sound;
-    Game theGame(graphics, sound);
+    Game game(graphics, sound);
 
-    theGame.start();
+    game.start();
 }
 
 int main(int argc, char *argv[])
