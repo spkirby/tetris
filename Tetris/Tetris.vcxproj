@@ -111,7 +111,9 @@ xcopy "$(ProjectDir)SDL*.dll" "$(TargetDir)" /y </Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="Enums.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="PlayField.h" />
     <ClInclude Include="resource.h" />

@@ -15,10 +15,12 @@ Sound::Sound()
 
 Sound::~Sound()
 {
-    for(int i=0; i < NUM_OF_SOUNDS; i++)
+    for (int i = 0; i < NUM_OF_SOUNDS; i++)
     {
-        if(sounds[i])
+        if (sounds[i])
+        {
             Mix_FreeChunk(sounds[i]);
+        }
     }
 
     Mix_CloseAudio();

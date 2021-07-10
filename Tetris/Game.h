@@ -1,4 +1,5 @@
 #pragma once
+#include "GameState.h"
 #include "Graphics.h"
 #include "PlayField.h"
 #include "Shape.h"
@@ -22,20 +23,11 @@ protected:
     static const int INITIAL_FALL_DELAY = 20;
     static const int MOVEMENT_RECHARGE_TIME = 2;
 
-    enum State
-    {
-        STATE_NOT_STARTED = 0,
-        STATE_TITLE = 1,
-        STATE_IN_GAME = 2,
-        STATE_GAME_OVER = 3,
-        STATE_QUITTING = 4
-    };
-
     Graphics& graphics;
     Sound& sound;
 
     bool keyPressed;
-    State state;
+    GameState state;
     int level;
     int score;
     int fallDelay;
@@ -52,7 +44,9 @@ protected:
 
     bool isAnyKeyDown();
     void handleEvents();
-    bool canMoveShape(int xOffset, int yOffset);
+    bool tryMoveShape(Direction direction);
+    bool canMoveShape(Direction direction);
+    bool tryRotate(Direction direction);
     bool canRotate(Direction direction);
     void startFrame();
     void endFrame();

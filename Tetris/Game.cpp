@@ -1,5 +1,6 @@
 #include "Enums.h"
 #include "Game.h"
+#include "GameState.h"
 #include "Graphics.h"
 #include "Point.h"
 #include "Sound.h"
@@ -11,7 +12,7 @@ Game::Game(Graphics& graphics, Sound& sound) :
     sound(sound)
 {
     keystate = SDL_GetKeyboardState(nullptr);
-    state = STATE_NOT_STARTED;
+    state = GameState::NotStarted;
     currentShape = nextShape = nullptr;
     fallDelay = INITIAL_FALL_DELAY;
     statusPanel.position = Point(100, 50);
@@ -25,35 +26,35 @@ Game::~Game()
 
 void Game::start()
 {
-    state = STATE_TITLE;
+    state = GameState::Title;
     reset();
     render();
 
-    while(state != STATE_QUITTING)
+    while (state != GameState::Quitting)
     {
         handleEvents();
 
-        if(keyPressed)
+        if (keyPressed)
         {
             sound.play(SOUND_START);
             reset();
             play();
 
-            if(state != STATE_QUITTING)
+            if (state != GameState::Quitting)
             {
-                state = STATE_TITLE;
+                state = GameState::Title;
                 render();
 
                 do // Wait until no keys are pressed
                 {
                     handleEvents();
                 }
-                while(isAnyKeyDown());
+                while (isAnyKeyDown());
             }
         }
     }
 
-    state = STATE_NOT_STARTED;
+    state = GameState::NotStarted;
 }
 
 void Game::reset()
@@ -66,12 +67,17 @@ void Game::reset()
     score = 0;
     totalLines = 0;
 
-    if(currentShape)
+    if (currentShape)
+    {
         delete currentShape;
-    currentShape = Shape::createRandom();
+    }
 
-    if(nextShape)
+    if (nextShape)
+    {
         delete nextShape;
+    }
+
+    currentShape = Shape::createRandom();
     nextShape = Shape::createRandom();
 
     field.reset();
@@ -80,48 +86,45 @@ void Game::reset()
 
 void Game::play()
 {
-    state = STATE_IN_GAME;
+    state = GameState::InGame;
     bool rotateLocked = false;
 
-    while(state == STATE_IN_GAME)
+    while (state == GameState::InGame)
     {
         startFrame();
         graphics.clear(0, 0, 0);
 
         handleEvents();
 
-        if(currentShape)
+        if (currentShape)
         {
-            if(framesUntilMove == 0)
+            if (framesUntilMove == 0)
             {
                 bool hasMoved = false;
 
-                if(isKeyDown(SDLK_a) && !rotateLocked)
+                if (isKeyDown(SDLK_a) && !rotateLocked)
                 {
-                    if (canRotate(DIRECTION_LEFT))
+                    if (canRotate(Direction::Left))
                     {
-                        currentShape->rotateLeft();
+                        currentShape->rotate(Direction::Left);
                         sound.play(SOUND_ROTATE);
                         rotateLocked = true;
                     }
                 }
-                else if((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && !rotateLocked)
+                else if ((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && !rotateLocked)
                 {
-                    if (canRotate(DIRECTION_RIGHT))
+                    if (tryRotate(Direction::Right))
                     {
-                        currentShape->rotateRight();
                         sound.play(SOUND_ROTATE);
                         rotateLocked = true;
                     }
                 }
-                else if (isKeyDown(SDLK_LEFT) && canMoveShape(-1, 0))
+                else if (isKeyDown(SDLK_LEFT) && tryMoveShape(Direction::Left))
                 {
-                    currentShape->moveLeft();
                     hasMoved = true;
                 }
-                else if (isKeyDown(SDLK_RIGHT) && canMoveShape(1, 0))
+                else if (isKeyDown(SDLK_RIGHT) && tryMoveShape(Direction::Right))
                 {
-                    currentShape->moveRight();
                     hasMoved = true;
                 }
                 else if (isKeyDown(SDLK_DOWN))
@@ -145,13 +148,9 @@ void Game::play()
             }
 
 
-            if(framesUntilFall-- == 0)
+            if (framesUntilFall-- == 0)
             {
-                if (canMoveShape(0, 1))
-                {
-                    currentShape->moveDown();
-                }
-                else  // Shape has landed
+                if (!tryMoveShape(Direction::Down)) // Shape has landed
                 {
                     if (field.isShapeInsideField(*currentShape))
                     {
@@ -189,7 +188,7 @@ void Game::play()
                     }
                     else // Shape is outside the well - game over!
                     {
-                        state = STATE_GAME_OVER;
+                        state = GameState::GameOver;
                         sound.play(SOUND_GAME_OVER);
                     }
 
@@ -201,14 +200,16 @@ void Game::play()
             }
         }
 
-        if(currentShape == nullptr && !field.isAnimating())
+        if (currentShape == nullptr && !field.isAnimating())
         {
             currentShape = nextShape;
             nextShape = Shape::createRandom();
         }
 
-        if(field.update())
+        if (field.update())
+        {
             sound.play(SOUND_THUD);
+        }
 
         render();
         endFrame();
@@ -220,25 +221,25 @@ void Game::handleEvents()
     SDL_Event event;
     keyPressed = false;
 
-    while (state != STATE_QUITTING && SDL_PollEvent(&event))
+    while (state != GameState::Quitting && SDL_PollEvent(&event))
     {
         // Handle SDL Events
         switch (event.type)
         {
             case SDL_QUIT:
-                state = STATE_QUITTING;
+                state = GameState::Quitting;
                 break;
 
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym)
                 {
                     case SDLK_ESCAPE:
-                        state = STATE_TITLE;
+                        state = GameState::Title;
                         break;
 
                     case SDLK_F4:
                         if (event.key.keysym.mod & KMOD_ALT)
-                            state = STATE_QUITTING;
+                            state = GameState::Quitting;
                         break;
 
                     case SDLK_LALT:
@@ -253,25 +254,47 @@ void Game::handleEvents()
     }
 }
 
-bool Game::canMoveShape(int xOffset, int yOffset)
+bool Game::canMoveShape(Direction direction)
 {
-    Point pos = currentShape->getGridPos();
-    return field.checkValidMove(pos.x + xOffset, pos.y + yOffset, *currentShape);
+    return currentShape
+        && field.isValidMove(currentShape->getGridPos() + Point(direction), *currentShape);
+}
+
+bool Game::tryMoveShape(Direction direction)
+{
+    if (currentShape && canMoveShape(direction))
+    {
+        currentShape->move(direction);
+        return true;
+    }
+
+    return false;
+}
+
+bool Game::tryRotate(Direction direction)
+{
+    if (currentShape && canRotate(direction))
+    {
+        currentShape->rotate(direction);
+        return true;
+    }
+
+    return false;
 }
 
 bool Game::canRotate(Direction direction)
 {
     Shape shapeCopy(*currentShape);
-
-    if (direction == DIRECTION_LEFT)
-        shapeCopy.rotateLeft();
+    
+    if (direction == Direction::Left || direction == Direction::Right)
+    {
+        shapeCopy.rotate(direction);
+        return field.isValidMove(shapeCopy.getGridPos(), shapeCopy);
+    }
     else
-        shapeCopy.rotateRight();
-
-    Point pos = shapeCopy.getGridPos();
-    bool isValid = field.checkValidMove(pos.x, pos.y, shapeCopy);
-
-    return isValid;
+    {
+        return false;
+    }
 }
 
 void Game::startFrame()
@@ -283,23 +306,29 @@ void Game::endFrame()
 {
     Uint32 timeLeft = TIME_PER_FRAME - (SDL_GetTicks() - frameStart);
 
-    if(timeLeft > 0 && timeLeft < TIME_PER_FRAME)
+    if (timeLeft > 0 && timeLeft < TIME_PER_FRAME)
+    {
         SDL_Delay(timeLeft);
+    }
 }
 
 void Game::render()
 {
-    if(state == STATE_IN_GAME)
+    if(state == GameState::InGame)
     {
         field.draw(graphics);
 
-        if(currentShape)
+        if (currentShape)
+        {
             currentShape->draw(graphics, field.getScreenPos());
+        }
 
-        if(nextShape)
+        if (nextShape)
+        {
             nextShape->draw(graphics, 100, 100);
+        }
     }
-    else if(state == STATE_TITLE)
+    else if(state == GameState::Title)
     {
         field.drawOutline(graphics);
         graphics.draw(IMAGE_LOGO, 582, 242);
@@ -323,7 +352,9 @@ bool Game::isAnyKeyDown()
     for (int i = 0; i <= SDL_NUM_SCANCODES; i++)
     {
         if (keystate[i] != 0)
+        {
             return true;
+        }
     }
 
     return false;
