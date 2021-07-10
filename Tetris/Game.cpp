@@ -49,7 +49,7 @@ void Game::start()
                 {
                     handleEvents();
                 }
-                while (isAnyKeyDown());
+                while (keyboard.isAnyKeyDown());
             }
         }
     }
@@ -102,16 +102,15 @@ void Game::play()
             {
                 bool hasMoved = false;
 
-                if (isKeyDown(SDLK_a) && !rotateLocked)
+                if (keyboard.isKeyDown(SDLK_a) && !rotateLocked)
                 {
-                    if (canRotate(Direction::Left))
+                    if (tryRotate(Direction::Left))
                     {
-                        currentShape->rotate(Direction::Left);
                         sound.play(SOUND_ROTATE);
                         rotateLocked = true;
                     }
                 }
-                else if ((isKeyDown(SDLK_s) || isKeyDown(SDLK_UP)) && !rotateLocked)
+                else if ((keyboard.isKeyDown(SDLK_s) || keyboard.isKeyDown(SDLK_UP)) && !rotateLocked)
                 {
                     if (tryRotate(Direction::Right))
                     {
@@ -119,20 +118,20 @@ void Game::play()
                         rotateLocked = true;
                     }
                 }
-                else if (isKeyDown(SDLK_LEFT) && tryMoveShape(Direction::Left))
+                else if (keyboard.isKeyDown(SDLK_LEFT) && tryMoveShape(Direction::Left))
                 {
                     hasMoved = true;
                 }
-                else if (isKeyDown(SDLK_RIGHT) && tryMoveShape(Direction::Right))
+                else if (keyboard.isKeyDown(SDLK_RIGHT) && tryMoveShape(Direction::Right))
                 {
                     hasMoved = true;
                 }
-                else if (isKeyDown(SDLK_DOWN))
+                else if (keyboard.isKeyDown(SDLK_DOWN))
                 {
                     framesUntilFall = 0;
                 }
 
-                if (!isKeyDown(SDLK_a) && !isKeyDown(SDLK_s) && !isKeyDown(SDLK_UP))
+                if (!keyboard.isKeyDown(SDLK_a) && !keyboard.isKeyDown(SDLK_s) && !keyboard.isKeyDown(SDLK_UP))
                 {
                     rotateLocked = false;
                 }
@@ -273,7 +272,7 @@ bool Game::tryMoveShape(Direction direction)
 
 bool Game::tryRotate(Direction direction)
 {
-    if (currentShape && canRotate(direction))
+    if (canRotate(direction))
     {
         currentShape->rotate(direction);
         return true;
@@ -284,6 +283,8 @@ bool Game::tryRotate(Direction direction)
 
 bool Game::canRotate(Direction direction)
 {
+    if (!currentShape) return false;
+
     Shape shapeCopy(*currentShape);
     
     if (direction == Direction::Left || direction == Direction::Right)
@@ -340,22 +341,4 @@ void Game::render()
     statusPanel.render(graphics);
 
     graphics.update();
-}
-
-bool Game::isKeyDown(SDL_Keycode keycode)
-{
-    return keystate[SDL_GetScancodeFromKey(keycode)] != 0;
-}
-
-bool Game::isAnyKeyDown()
-{
-    for (int i = 0; i <= SDL_NUM_SCANCODES; i++)
-    {
-        if (keystate[i] != 0)
-        {
-            return true;
-        }
-    }
-
-    return false;
 }

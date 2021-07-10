@@ -7,6 +7,7 @@
 #include "StatusPanel.h"
 #include "SDL.h"
 #include "Enums.h"
+#include "Keyboard.h"
 
 class Game
 {
@@ -36,6 +37,7 @@ protected:
     int linesThisLevel, totalLines;
     Uint32 frameStart, timePerFrame;
 
+    Keyboard keyboard;
     PlayField field;
     StatusPanel statusPanel;
 

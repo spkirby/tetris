@@ -102,6 +102,7 @@ xcopy "$(ProjectDir)SDL*.dll" "$(TargetDir)" /y </Command>
   <ItemGroup>
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PlayField.cpp" />
     <ClCompile Include="Point.cpp" />
@@ -115,6 +116,7 @@ xcopy "$(ProjectDir)SDL*.dll" "$(TargetDir)" /y </Command>
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="Keyboard.h" />
     <ClInclude Include="PlayField.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Shape.h" />
