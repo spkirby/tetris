@@ -29,7 +29,7 @@ protected:
     static const int DEFAULT_ANIM_TIME = 24;
 
     Point screenPos;
-    int field[FIELD_HEIGHT][FIELD_WIDTH];
+    ImageId field[FIELD_HEIGHT][FIELD_WIDTH];
     int animationTime;  // Amount of time for which the field will animate
     int linesToRemove[4];
 };

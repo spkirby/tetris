@@ -20,8 +20,15 @@ Game::Game(Graphics& graphics, Sound& sound) :
 
 Game::~Game()
 {
-    if(currentShape) delete currentShape;
-    if(nextShape) delete nextShape;
+    if (currentShape)
+    {
+        delete currentShape;
+    }
+
+    if (nextShape)
+    {
+        delete nextShape;
+    }
 }
 
 void Game::start()
@@ -157,12 +164,16 @@ void Game::play()
 
                         int completeLines = field.checkForLines(currentShape);
 
-                        if(completeLines > 0)
+                        if (completeLines > 0)
+                        {
                             sound.play(SOUND_LINE);
+                        }
                         else
+                        {
                             sound.play(SOUND_THUD);
+                        }
 
-                        switch(completeLines)
+                        switch (completeLines)
                         {
                             case 1: score += 40   * level; break;
                             case 2: score += 100  * level; break;
@@ -174,13 +185,15 @@ void Game::play()
                         totalLines += completeLines;
                         linesThisLevel += completeLines;
 
-                        if(linesThisLevel >= 10)
+                        if (linesThisLevel >= 10)
                         {
                             level++;
                             linesThisLevel -= 10;
 
-                            if(fallDelay > 0)
+                            if (fallDelay > 0)
+                            {
                                 fallDelay -= 2;
+                            }
                         }
 
                         framesUntilMove = 0;
@@ -315,7 +328,7 @@ void Game::endFrame()
 
 void Game::render()
 {
-    if(state == GameState::InGame)
+    if (state == GameState::InGame)
     {
         field.draw(graphics);
 
@@ -329,15 +342,15 @@ void Game::render()
             nextShape->draw(graphics, 100, 100);
         }
     }
-    else if(state == GameState::Title)
+    else if (state == GameState::Title)
     {
         field.drawOutline(graphics);
-        graphics.draw(IMAGE_LOGO, 582, 242);
+        graphics.renderImage(ImageId::Logo, Point(582, 242));
     }
 
-    statusPanel.level = level;
-    statusPanel.score = score;
-    statusPanel.lines = linesThisLevel;
+    statusPanel.setLevel(level);
+    statusPanel.setScore(score);
+    statusPanel.setLines(linesThisLevel);
     statusPanel.render(graphics);
 
     graphics.update();

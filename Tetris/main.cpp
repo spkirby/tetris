@@ -20,8 +20,10 @@ int main(int argc, char *argv[])
 {
     try
     {
-        if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
+        if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
+        {
             throw SDL_GetError();
+        }
 
         srand((unsigned int)time(nullptr));
         startGame();

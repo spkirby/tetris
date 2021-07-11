@@ -17,18 +17,24 @@ void PlayField::reset()
 
     linesToRemove[0] = linesToRemove[1] = linesToRemove[2] = linesToRemove[3] = -1;
 
-    for(int y=0; y < FIELD_HEIGHT-1; y++)
-        for(int x=1; x < FIELD_WIDTH-1; x++)
-            field[y][x] = IMAGE_BLOCK_EMPTY;
+    for (int y = 0; y < FIELD_HEIGHT - 1; y++)
+    {
+        for (int x = 1; x < FIELD_WIDTH - 1; x++)
+        {
+            field[y][x] = ImageId::BlockEmpty;
+        }
+    }
 
     for(int y=0; y < FIELD_HEIGHT; y++)
     {
-        field[y][0] = IMAGE_BOUNDARY;
-        field[y][FIELD_WIDTH-1] = IMAGE_BOUNDARY;
+        field[y][0] = ImageId::Boundary;
+        field[y][FIELD_WIDTH-1] = ImageId::Boundary;
     }
 
-    for(int x=1; x < FIELD_WIDTH-1; x++)
-        field[FIELD_HEIGHT-1][x] = IMAGE_BOUNDARY;
+    for (int x = 1; x < FIELD_WIDTH - 1; x++)
+    {
+        field[FIELD_HEIGHT - 1][x] = ImageId::Boundary;
+    }
 }
 
 void PlayField::draw(Graphics& graphics)
@@ -36,43 +42,46 @@ void PlayField::draw(Graphics& graphics)
     bool flashLine;
     int ltrIndex = 0;
 
-    for(int y=FIELD_HEIGHT-1; y >= FIELD_VIS_TOP; y--)
+    for (int y = FIELD_HEIGHT - 1; y >= FIELD_VIS_TOP; y--)
     {
         flashLine = false;
 
-        if(ltrIndex < 4 && y == linesToRemove[ltrIndex])
+        if (ltrIndex < 4 && y == linesToRemove[ltrIndex])
         {
             flashLine = (animationTime > 0 && (animationTime / 3) % 2 == 0);
             ltrIndex++;
         }
 
-        for(int x=0; x < FIELD_WIDTH; x++)
+        for (int x = 0; x < FIELD_WIDTH; x++)
         {
-            int imgIndex;
+            ImageId imgIndex;
 
-            if(flashLine && x > 0 && x < FIELD_WIDTH - 1)
-                imgIndex = IMAGE_BLOCK_EMPTY;
+            if (flashLine && x > 0 && x < FIELD_WIDTH - 1)
+            {
+                imgIndex = ImageId::BlockEmpty;
+            }
             else
-                imgIndex = IMAGE_BLOCK_EMPTY + field[y][x];
+            {
+                imgIndex = field[y][x];
+            }
 
-            graphics.draw((ImageId)imgIndex,
-                screenPos.x + (x * Shape::BLOCK_SIZE),
-                screenPos.y + ((y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE));
+            Point offset(x * Shape::BLOCK_SIZE, (y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE);
+
+            graphics.renderImage(imgIndex, screenPos + offset);
         }
     }
 }
 
 void PlayField::drawOutline(Graphics& graphics)
 {
-    for(int y=FIELD_HEIGHT-1; y >= FIELD_VIS_TOP; y--)
+    for (int y = FIELD_HEIGHT - 1; y >= FIELD_VIS_TOP; y--)
     {
-        for(int x=0; x < FIELD_WIDTH; x++)
+        for (int x = 0; x < FIELD_WIDTH; x++)
         {
-            if(field[y][x] == IMAGE_BOUNDARY)
+            if (field[y][x] == ImageId::Boundary)
             {
-                graphics.draw(IMAGE_BOUNDARY,
-                    screenPos.x + (x * Shape::BLOCK_SIZE),
-                    screenPos.y + ((y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE));
+                Point offset(x * Shape::BLOCK_SIZE, (y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE);
+                graphics.renderImage(ImageId::Boundary, screenPos + offset);
             }
         }
     }
@@ -89,7 +98,7 @@ bool PlayField::isValidMove(Point& newPosition, Shape& shape)
     {
         for (int x = 0; x < 4; x++)
         {
-            if (!shape.isEmpty(x, y) && field[newPosition.y + y][newPosition.x + x])
+            if (!shape.isEmpty(x, y) && field[newPosition.y + y][newPosition.x + x] != ImageId::BlockEmpty)
             {
                 return false;
             }
@@ -109,9 +118,9 @@ int PlayField::checkForLines(Shape* shape)
     linesToRemove[2] = -1;
     linesToRemove[3] = -1;
 
-    while(line > 0)
+    while (line > 0)
     {
-        if(isLineComplete(line))
+        if (isLineComplete(line))
         {
             linesToRemove[linesComplete] = line;
             linesComplete++;
@@ -120,8 +129,10 @@ int PlayField::checkForLines(Shape* shape)
         line--;
     }
 
-    if(linesComplete)
+    if (linesComplete)
+    {
         animationTime = DEFAULT_ANIM_TIME;
+    }
 
     return linesComplete;
 }
@@ -130,9 +141,13 @@ bool PlayField::isLineComplete(int line)
 {
     bool complete = true;
 
-    for(int x=1; complete && x < FIELD_WIDTH-1; x++)
-        if(field[line][x] == 0)
+    for (int x = 1; complete && x < FIELD_WIDTH - 1; x++)
+    {
+        if (field[line][x] == ImageId::BlockEmpty)
+        {
             complete = false;
+        }
+    }
 
     return complete;
 }
@@ -140,7 +155,7 @@ bool PlayField::isLineComplete(int line)
 void PlayField::removeLine(int line)
 {
     memmove(field[1], field[0], sizeof(int) * FIELD_WIDTH * line);
-    memset(field[0]+1, 0, FIELD_WIDTH-2);
+    memset(field[0] + 1, 0, FIELD_WIDTH - 2);
 }
 
 bool PlayField::isShapeInsideField(Shape &shape)
@@ -179,18 +194,18 @@ void PlayField::absorbShape(Shape& shape)
 
 bool PlayField::isAnimating()
 {
-    return (animationTime > 0);
+    return animationTime > 0;
 }
 
 bool PlayField::update()
 {
     bool linesRemoved = false;
 
-    if(isAnimating() && --animationTime == 0)
+    if (isAnimating() && --animationTime == 0)
     {
-        for(int i=3; i >= 0; i--)
+        for (int i = 3; i >= 0; i--)
         {
-            if(linesToRemove[i] != -1)
+            if (linesToRemove[i] != -1)
             {
                 removeLine(linesToRemove[i]);
                 linesRemoved = true;

@@ -1,25 +1,40 @@
 #include "Graphics.h"
 #include "StatusPanel.h"
 
-StatusPanel::StatusPanel() :
-    level(1),
-    lines(0),
-    score(0)
+StatusPanel::StatusPanel()
 {
+}
+
+void StatusPanel::setLines(int lines)
+{
+    this->lines.setValue(lines);
+}
+
+void StatusPanel::setLevel(int level)
+{
+    this->level.setValue(level);
+}
+
+void StatusPanel::setScore(int score)
+{
+    this->score.setValue(score);
 }
 
 void StatusPanel::render(Graphics& graphics)
 {
-    graphics.draw(IMAGE_LOGO, position + Point(482, 192));
+    graphics.renderImage(ImageId::Logo, position + Point(482, 192));
 
-    graphics.draw(IMAGE_STATUS_NEXT, position);
+    graphics.renderImage(ImageId::StatusNext, position);
 
-    graphics.draw(IMAGE_STATUS_LINES, position + Point(0, 200));
-    graphics.drawNumber(lines, position + Point(0, 250));
+    graphics.renderImage(ImageId::StatusLines, position + Point(0, 200));
+    lines.position = position + Point(0, 250);
+    lines.render(graphics);
 
-    graphics.draw(IMAGE_STATUS_LEVEL, position + Point(0, 350));
-    graphics.drawNumber(level, position + Point(0, 400));
+    graphics.renderImage(ImageId::StatusLevel, position + Point(0, 350));
+    level.position = position + Point(0, 400);
+    level.render(graphics);
 
-    graphics.draw(IMAGE_STATUS_SCORE, 0, 500);
-    graphics.drawNumber(score, position + Point(0, 550));
+    graphics.renderImage(ImageId::StatusScore, position + Point(0, 500));
+    score.position = position + Point(0, 550);
+    score.render(graphics);
 }

@@ -4,6 +4,7 @@
 class Keyboard
 {
 public:
+    Keyboard();
     bool isKeyDown(SDL_Keycode keycode);
     bool isAnyKeyDown();
 

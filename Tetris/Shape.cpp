@@ -246,8 +246,13 @@ void Shape::draw(Graphics &graphics, Point origin)
     {
         for (int x = 0; x < 4; x++)
         {
-            if (shapes[shapeType][rotation][y][x] && gridPos.y + y >= PlayField::FIELD_VIS_TOP)
-                graphics.draw((ImageId)shapes[shapeType][rotation][y][x], screenPos.x + (x * BLOCK_SIZE), screenPos.y + (y * BLOCK_SIZE));
+            ImageId block = getShapeBlock(x, y);
+
+            if (block != ImageId::BlockEmpty && gridPos.y + y >= PlayField::FIELD_VIS_TOP)
+            {
+                Point dest(screenPos.x + (x * BLOCK_SIZE), screenPos.y + (y * BLOCK_SIZE));
+                graphics.renderImage(block, dest);
+            }
         }
     }
 }
@@ -258,8 +263,13 @@ void Shape::draw(Graphics &graphics, int screenX, int screenY)
     {
         for (int x = 0; x < 4; x++)
         {
-            if (shapes[shapeType][rotation][y][x])
-                graphics.draw((ImageId)shapes[shapeType][rotation][y][x], screenX + (x * BLOCK_SIZE), screenY + (y * BLOCK_SIZE));
+            ImageId block = getShapeBlock(x, y);
+
+            if (block != ImageId::BlockEmpty)
+            {
+                Point dest(screenX + (x * BLOCK_SIZE), screenY + (y * BLOCK_SIZE));
+                graphics.renderImage(block, dest);
+            }
         }
     }
 }
@@ -269,15 +279,15 @@ Point Shape::getGridPos()
     return gridPos;
 }
 
-int Shape::getShapeBlock(int x, int y)
+ImageId Shape::getShapeBlock(int x, int y)
 {
     if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT)
         throw "Out of bounds";
 
-    return shapes[shapeType][rotation][y][x];
+    return (ImageId)shapes[shapeType][rotation][y][x];
 }
 
 bool Shape::isEmpty(int x, int y)
 {
-    return getShapeBlock(x, y) == 0;
+    return getShapeBlock(x, y) == ImageId::BlockEmpty;
 }

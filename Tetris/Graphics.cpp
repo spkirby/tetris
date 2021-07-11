@@ -1,5 +1,7 @@
 #include <cstdio>
 #include <cmath>
+#include <stdexcept>
+#include "Enums.h"
 #include "Graphics.h"
 #include "Point.h"
 #include "Shape.h"
@@ -32,17 +34,56 @@ Graphics::Graphics()
 
 Graphics::~Graphics()
 {
-    for (int i = 0; i < NUM_OF_IMAGES; i++)
-        SDL_DestroyTexture(images[i]);
+    for (int i = 0; i < (int)ImageId::Count; i++)
+    {
+        if (images[i])
+        {
+            SDL_DestroyTexture(images[i]);
+            images[i] = nullptr;
+        }
+    }
 
     if (icon)
+    {
         SDL_FreeSurface(icon);
+        icon = nullptr;
+    }
 
     if (renderer)
+    {
         SDL_DestroyRenderer(renderer);
+        renderer = nullptr;
+    }
 
     if (window)
+    {
         SDL_DestroyWindow(window);
+        window = nullptr;
+    }
+}
+
+SDL_Texture* Graphics::getImage(ImageId imageId)
+{
+    if (imageId < (ImageId)0 || imageId >= ImageId::Count)
+    {
+        throw new std::out_of_range("Invalid Image ID");
+    }
+
+    return images[(int)imageId];
+}
+
+SDL_Texture* Graphics::setImage(ImageId imageId, SDL_Texture* image)
+{
+    SDL_Texture* oldImage = nullptr;
+
+    if (images[(int)imageId])
+    {
+        oldImage = images[(int)imageId];
+    }
+
+    images[(int)imageId] = image;
+
+    return oldImage;
 }
 
 void Graphics::setIcon()
@@ -54,37 +95,47 @@ void Graphics::setIcon()
 
 void Graphics::loadImages()
 {
+    loadBlockImages();
+
+    setImage(ImageId::StatusLines, loadTexture("gfx/lines.bmp"));
+    setImage(ImageId::StatusLevel, loadTexture("gfx/level.bmp"));
+    setImage(ImageId::StatusScore, loadTexture("gfx/score.bmp"));
+    setImage(ImageId::StatusNext, loadTexture("gfx/next.bmp"));
+    setImage(ImageId::Digits, loadTexture("gfx/digits.bmp"));
+    setImage(ImageId::Logo, loadTexture("gfx/logo.bmp"));
+}
+
+void Graphics::loadBlockImages()
+{
     int blockSize = Shape::BLOCK_SIZE;
-
     SDL_Surface* blocks = loadImageFile("gfx/blocks.bmp");
-    images[IMAGE_BLOCK_EMPTY] = getSubTexture(blocks, blockSize * 0, 0, blockSize, blockSize);
-    images[IMAGE_BLOCK_I]     = getSubTexture(blocks, blockSize * 1, 0, blockSize, blockSize);
-    images[IMAGE_BLOCK_J]     = getSubTexture(blocks, blockSize * 2, 0, blockSize, blockSize);
-    images[IMAGE_BLOCK_L]     = getSubTexture(blocks, blockSize * 3, 0, blockSize, blockSize);
-    images[IMAGE_BLOCK_O]     = getSubTexture(blocks, blockSize * 4, 0, blockSize, blockSize);
-    images[IMAGE_BLOCK_S]     = getSubTexture(blocks, blockSize * 5, 0, blockSize, blockSize);
-    images[IMAGE_BLOCK_T]     = getSubTexture(blocks, blockSize * 6, 0, blockSize, blockSize);
-    images[IMAGE_BLOCK_Z]     = getSubTexture(blocks, blockSize * 7, 0, blockSize, blockSize);
-    images[IMAGE_BOUNDARY]    = getSubTexture(blocks, blockSize * 8, 0, blockSize, blockSize);
-    SDL_FreeSurface(blocks);
 
-    images[IMAGE_STATUS_LINES] = loadTexture("gfx/lines.bmp");
-    images[IMAGE_STATUS_LEVEL] = loadTexture("gfx/level.bmp");
-    images[IMAGE_STATUS_SCORE] = loadTexture("gfx/score.bmp");
-    images[IMAGE_STATUS_NEXT]  = loadTexture("gfx/next.bmp");
-    images[IMAGE_DIGITS]       = loadTexture("gfx/digits.bmp");
-    images[IMAGE_LOGO]         = loadTexture("gfx/logo.bmp");
+    for (int i = (int)ImageId::BlockEmpty; i <= (int)ImageId::Boundary; i++)
+    {
+        setImage((ImageId)i, getSubTexture(blocks, blockSize * i, 0, blockSize, blockSize));
+    }
+
+    SDL_FreeSurface(blocks);
 }
 
 SDL_Surface* Graphics::loadImageFile(const char* filename)
 {
-    SDL_Surface *raw, *image;
+    SDL_Surface *raw = SDL_LoadBMP(filename);
 
-    if( ( raw   = SDL_LoadBMP(filename)  ) == nullptr ||
-        ( image = SDL_ConvertSurfaceFormat(raw, SDL_GetWindowPixelFormat(window), 0) ) == nullptr )
+    if (!raw)
+    {
         throw SDL_GetError();
+    }
+
+    SDL_Surface *image = SDL_ConvertSurfaceFormat(raw, SDL_GetWindowPixelFormat(window), 0);
+    
+    if (!image)
+    {
+        throw SDL_GetError();
+    }
 
     SDL_FreeSurface(raw);
+
     return image;
 }
 
@@ -130,49 +181,41 @@ void Graphics::clear(Uint8 r, Uint8 g, Uint8 b)
     SDL_RenderClear(renderer);
 }
 
-void Graphics::draw(ImageId imageIndex, Point& point)
+void Graphics::renderImage(ImageId imageId, Point& point)
 {
-    draw(imageIndex, point.x, point.y);
-}
-
-void Graphics::draw(ImageId imageIndex, int x, int y)
-{
-    Uint32 format;
-    int access;
     int w, h;
-    SDL_QueryTexture(images[imageIndex], &format, &access, &w, &h);
+    SDL_QueryTexture(getImage(imageId), nullptr, nullptr, &w, &h);
 
-    SDL_Rect dest = { x, y, w, h };
-    SDL_RenderCopy(renderer, images[imageIndex], nullptr, &dest);
-}
-
-void Graphics::drawNumber(int num, Point& point)
-{
-    drawNumber(num, point.x, point.y);
-}
-
-void Graphics::drawNumber(int num, int x, int y)
-{
-    if(num < 0)
-        throw "Invalid number";
-
-    if (num > 999999)
-        num = 999999;
-
-    SDL_Rect dest = { x, y };
-
-    char buffer[7]; // "999999\0"
-    snprintf(buffer, sizeof(buffer), "%d", num);
-
-    for(int i = 0; buffer[i]; i++)
+    SDL_Rect destRect =
     {
-        int index = buffer[i] - '0';
-        SDL_Rect* digitRect = &digitRects[index];
-        dest.w = digitRect->w;
-        dest.h = digitRect->h;
-        SDL_RenderCopy(renderer, images[IMAGE_DIGITS], digitRect, &dest);
-        dest.x += digitRects[index].w + 4;
+        point.x,
+        point.y,
+        w,
+        h
+    };
+
+    SDL_RenderCopy(renderer, getImage(imageId), nullptr, &destRect);
+}
+
+int Graphics::renderDigit(int digit, Point& point)
+{
+    if (digit < 0 || digit > 9)
+    {
+        throw new std::out_of_range("Invalid digit");
     }
+
+    SDL_Rect* srcRect = &digitRects[digit];
+    SDL_Rect destRect =
+    {
+         point.x,
+         point.y,
+         srcRect->w,
+         srcRect->h
+    };
+
+    SDL_RenderCopy(renderer, getImage(ImageId::Digits), srcRect, &destRect);
+
+    return destRect.w;
 }
 
 void Graphics::update()

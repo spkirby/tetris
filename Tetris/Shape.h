@@ -30,7 +30,7 @@ public:
     void rotate(Direction direction);
     void draw(Graphics &graphics, Point origin);
     void draw(Graphics &graphics, int screenX, int screenY);
-    int getShapeBlock(int x, int y);
+    ImageId getShapeBlock(int x, int y);
     bool isEmpty(int x, int y);
     Point getGridPos();
 
