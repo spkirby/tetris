@@ -26,9 +26,7 @@ Graphics::Graphics()
 {
     SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
     SDL_SetWindowTitle(window, "Tetris");
-
     setIcon();
-
     loadImages();
 }
 
@@ -221,4 +219,9 @@ int Graphics::renderDigit(int digit, Point& point)
 void Graphics::update()
 {
     SDL_RenderPresent(renderer);
+}
+
+void Graphics::setClippingRect(SDL_Rect* rect)
+{
+    SDL_RenderSetClipRect(renderer, rect);
 }

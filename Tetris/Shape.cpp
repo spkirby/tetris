@@ -5,8 +5,9 @@
 #include "Shape.h"
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
 
-const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
+const int Shape::shapes[(int)ShapeType::NUM_OF_SHAPES][4][4][4] =
 {
     // I
     {
@@ -208,20 +209,50 @@ const int Shape::shapes[NUM_OF_SHAPES][4][4][4] =
 
 Shape::Shape(ShapeType type)
 {
-    shapeType   = type;
-    rotation    = 0;
-    gridPos.x = (PlayField::FIELD_WIDTH / 2) - 2;
-    gridPos.y = (type == SHAPE_I) ? 1 : 2;
+    shapeType = type;
+    rotation = 0;
 }
 
 Shape* Shape::createRandom()
 {
-    return new Shape((ShapeType)(rand() % NUM_OF_SHAPES));
+    return new Shape((ShapeType)(rand() % (int)ShapeType::NUM_OF_SHAPES));
 }
 
-void Shape::move(Direction direction)
+ImageId Shape::getShapeBlock(int x, int y)
 {
-    gridPos = gridPos + Point(direction);
+    if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT)
+    {
+        throw std::out_of_range("Position is out of bounds");
+    }
+
+    return (ImageId)shapes[(int)shapeType][rotation][y][x];
+}
+
+ShapeType Shape::getType()
+{
+    return shapeType;
+}
+
+bool Shape::isEmpty(int x, int y)
+{
+    return getShapeBlock(x, y) == ImageId::BlockEmpty;
+}
+
+void Shape::render(Graphics& graphics)
+{
+    for (int y = 0; y < 4; y++)
+    {
+        for (int x = 0; x < 4; x++)
+        {
+            ImageId block = getShapeBlock(x, y);
+
+            if (block != ImageId::BlockEmpty /*&& gridPos.y + y >= PlayField::FIELD_VIS_TOP*/)
+            {
+                Point offset(x * BLOCK_SIZE, y * BLOCK_SIZE);
+                graphics.renderImage(block, position + offset);
+            }
+        }
+    }
 }
 
 void Shape::rotate(Direction direction)
@@ -234,60 +265,4 @@ void Shape::rotate(Direction direction)
     {
         rotation = (rotation + 1) % 4;
     }
-}
-
-void Shape::draw(Graphics &graphics, Point origin)
-{
-    Point screenPos;
-    screenPos.x = (gridPos.x * BLOCK_SIZE) + origin.x;
-    screenPos.y = ((gridPos.y - PlayField::FIELD_VIS_TOP) * BLOCK_SIZE) + origin.y;
-
-    for (int y = 0; y < 4; y++)
-    {
-        for (int x = 0; x < 4; x++)
-        {
-            ImageId block = getShapeBlock(x, y);
-
-            if (block != ImageId::BlockEmpty && gridPos.y + y >= PlayField::FIELD_VIS_TOP)
-            {
-                Point dest(screenPos.x + (x * BLOCK_SIZE), screenPos.y + (y * BLOCK_SIZE));
-                graphics.renderImage(block, dest);
-            }
-        }
-    }
-}
-
-void Shape::draw(Graphics &graphics, int screenX, int screenY)
-{
-    for (int y = 0; y < 4; y++)
-    {
-        for (int x = 0; x < 4; x++)
-        {
-            ImageId block = getShapeBlock(x, y);
-
-            if (block != ImageId::BlockEmpty)
-            {
-                Point dest(screenX + (x * BLOCK_SIZE), screenY + (y * BLOCK_SIZE));
-                graphics.renderImage(block, dest);
-            }
-        }
-    }
-}
-
-Point Shape::getGridPos()
-{
-    return gridPos;
-}
-
-ImageId Shape::getShapeBlock(int x, int y)
-{
-    if (x < 0 || x > MAX_WIDTH || y < 0 || y > MAX_HEIGHT)
-        throw "Out of bounds";
-
-    return (ImageId)shapes[shapeType][rotation][y][x];
-}
-
-bool Shape::isEmpty(int x, int y)
-{
-    return getShapeBlock(x, y) == ImageId::BlockEmpty;
 }

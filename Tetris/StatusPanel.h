@@ -6,13 +6,13 @@ class StatusPanel : public Entity
 {
 public:
     StatusPanel();
-    void setLines(int lines);
-    void setLevel(int level);
-    void setScore(int score);
     virtual void render(Graphics& graphics) override;
+    void setLevel(int level);
+    void setLines(int lines);
+    void setScore(int score);
 
 protected:
-    StatusNumber lines;
     StatusNumber level;
+    StatusNumber lines;
     StatusNumber score;
 };

@@ -11,20 +11,14 @@ Game::Game(Graphics& graphics, Sound& sound) :
     graphics(graphics),
     sound(sound)
 {
-    keystate = SDL_GetKeyboardState(nullptr);
     state = GameState::NotStarted;
-    currentShape = nextShape = nullptr;
+    nextShape = nullptr;
     fallDelay = INITIAL_FALL_DELAY;
     statusPanel.position = Point(100, 50);
 }
 
 Game::~Game()
 {
-    if (currentShape)
-    {
-        delete currentShape;
-    }
-
     if (nextShape)
     {
         delete nextShape;
@@ -74,157 +68,154 @@ void Game::reset()
     score = 0;
     totalLines = 0;
 
-    if (currentShape)
-    {
-        delete currentShape;
-    }
-
     if (nextShape)
     {
         delete nextShape;
     }
 
-    currentShape = Shape::createRandom();
-    nextShape = Shape::createRandom();
-
     field.reset();
+    field.setShape(Shape::createRandom());
+
+    nextShape = Shape::createRandom();
+    nextShape->position = Point(100, 100);
+
     graphics.clear(0, 0, 0);
 }
 
 void Game::play()
 {
     state = GameState::InGame;
-    bool rotateLocked = false;
 
     while (state == GameState::InGame)
     {
         startFrame();
-        graphics.clear(0, 0, 0);
-
         handleEvents();
-
-        if (currentShape)
-        {
-            if (framesUntilMove == 0)
-            {
-                bool hasMoved = false;
-
-                if (keyboard.isKeyDown(SDLK_a) && !rotateLocked)
-                {
-                    if (tryRotate(Direction::Left))
-                    {
-                        sound.play(SOUND_ROTATE);
-                        rotateLocked = true;
-                    }
-                }
-                else if ((keyboard.isKeyDown(SDLK_s) || keyboard.isKeyDown(SDLK_UP)) && !rotateLocked)
-                {
-                    if (tryRotate(Direction::Right))
-                    {
-                        sound.play(SOUND_ROTATE);
-                        rotateLocked = true;
-                    }
-                }
-                else if (keyboard.isKeyDown(SDLK_LEFT) && tryMoveShape(Direction::Left))
-                {
-                    hasMoved = true;
-                }
-                else if (keyboard.isKeyDown(SDLK_RIGHT) && tryMoveShape(Direction::Right))
-                {
-                    hasMoved = true;
-                }
-                else if (keyboard.isKeyDown(SDLK_DOWN))
-                {
-                    framesUntilFall = 0;
-                }
-
-                if (!keyboard.isKeyDown(SDLK_a) && !keyboard.isKeyDown(SDLK_s) && !keyboard.isKeyDown(SDLK_UP))
-                {
-                    rotateLocked = false;
-                }
-
-                if (hasMoved)
-                {
-                    framesUntilMove = MOVEMENT_RECHARGE_TIME;
-                }
-            }
-            else
-            {
-                framesUntilMove--;
-            }
-
-
-            if (framesUntilFall-- == 0)
-            {
-                if (!tryMoveShape(Direction::Down)) // Shape has landed
-                {
-                    if (field.isShapeInsideField(*currentShape))
-                    {
-                        field.absorbShape(*currentShape);
-
-                        int completeLines = field.checkForLines(currentShape);
-
-                        if (completeLines > 0)
-                        {
-                            sound.play(SOUND_LINE);
-                        }
-                        else
-                        {
-                            sound.play(SOUND_THUD);
-                        }
-
-                        switch (completeLines)
-                        {
-                            case 1: score += 40   * level; break;
-                            case 2: score += 100  * level; break;
-                            case 3: score += 300  * level; break;
-                            case 4: score += 1200 * level; break;
-                            default: break;
-                        }
-
-                        totalLines += completeLines;
-                        linesThisLevel += completeLines;
-
-                        if (linesThisLevel >= 10)
-                        {
-                            level++;
-                            linesThisLevel -= 10;
-
-                            if (fallDelay > 0)
-                            {
-                                fallDelay -= 2;
-                            }
-                        }
-
-                        framesUntilMove = 0;
-                    }
-                    else // Shape is outside the well - game over!
-                    {
-                        state = GameState::GameOver;
-                        sound.play(SOUND_GAME_OVER);
-                    }
-
-                    delete currentShape;
-                    currentShape = nullptr;
-                }
-
-                framesUntilFall = fallDelay;
-            }
-        }
-
-        if (currentShape == nullptr && !field.isAnimating())
-        {
-            currentShape = nextShape;
-            nextShape = Shape::createRandom();
-        }
-
-        if (field.update())
-        {
-            sound.play(SOUND_THUD);
-        }
-
+        update();
         render();
         endFrame();
+    }
+}
+
+void Game::update()
+{
+    rotateLocked = false;
+
+    if (field.hasShape())
+    {
+        if (framesUntilMove-- == 0)
+        {
+            checkForMove();
+        }
+
+        if (framesUntilFall-- == 0)
+        {
+            moveShape();
+            framesUntilFall = fallDelay;
+        }
+    }
+
+    if (!field.hasShape() && !field.isAnimating())
+    {
+        field.setShape(nextShape);
+
+        nextShape = Shape::createRandom();
+        nextShape->position = Point(100, 100);
+    }
+
+    if (field.update())
+    {
+        sound.play(SOUND_THUD);
+    }
+}
+
+void Game::checkForMove()
+{
+    bool hasMoved = false;
+
+    if (keyboard.isKeyDown(SDLK_a) && !rotateLocked)
+    {
+        if (field.tryRotateShape(Direction::Left))
+        {
+            sound.play(SOUND_ROTATE);
+            rotateLocked = true;
+        }
+    }
+    else if ((keyboard.isKeyDown(SDLK_s) || keyboard.isKeyDown(SDLK_UP)) && !rotateLocked)
+    {
+        if (field.tryRotateShape(Direction::Right))
+        {
+            sound.play(SOUND_ROTATE);
+            rotateLocked = true;
+        }
+    }
+    else if (keyboard.isKeyDown(SDLK_LEFT) && field.tryMoveShape(Direction::Left))
+    {
+        hasMoved = true;
+    }
+    else if (keyboard.isKeyDown(SDLK_RIGHT) && field.tryMoveShape(Direction::Right))
+    {
+        hasMoved = true;
+    }
+    else if (keyboard.isKeyDown(SDLK_DOWN))
+    {
+        framesUntilFall = 0;
+    }
+
+    if (!keyboard.isKeyDown(SDLK_a) && !keyboard.isKeyDown(SDLK_s) && !keyboard.isKeyDown(SDLK_UP))
+    {
+        rotateLocked = false;
+    }
+
+    if (hasMoved)
+    {
+        framesUntilMove = MOVEMENT_RECHARGE_TIME;
+    }
+}
+
+void Game::moveShape()
+{
+    if (!field.tryMoveShape(Direction::Down)) // Shape has landed
+    {
+        int completedLines = 0;
+        sound.play(SOUND_THUD);
+
+        if (field.tryAbsorbShape(completedLines))
+        {
+            if (completedLines > 0)
+            {
+                sound.play(SOUND_LINE);
+            }
+
+            switch (completedLines)
+            {
+            case 1: score += 40 * level; break;
+            case 2: score += 100 * level; break;
+            case 3: score += 300 * level; break;
+            case 4: score += 1200 * level; break;
+            default: break;
+            }
+
+            totalLines += completedLines;
+            linesThisLevel += completedLines;
+
+            if (linesThisLevel >= 10)
+            {
+                level++;
+                linesThisLevel -= 10;
+
+                if (fallDelay > 0)
+                {
+                    fallDelay -= 2;
+                }
+            }
+
+            framesUntilMove = 0;
+        }
+        else // Shape is outside the well - game over!
+        {
+            state = GameState::GameOver;
+            sound.play(SOUND_GAME_OVER);
+        }
     }
 }
 
@@ -232,7 +223,8 @@ void Game::handleEvents()
 {
     SDL_Event event;
     keyPressed = false;
-
+    
+    // TODO: Stop this pegging 100% CPU!!
     while (state != GameState::Quitting && SDL_PollEvent(&event))
     {
         // Handle SDL Events
@@ -266,51 +258,6 @@ void Game::handleEvents()
     }
 }
 
-bool Game::canMoveShape(Direction direction)
-{
-    return currentShape
-        && field.isValidMove(currentShape->getGridPos() + Point(direction), *currentShape);
-}
-
-bool Game::tryMoveShape(Direction direction)
-{
-    if (currentShape && canMoveShape(direction))
-    {
-        currentShape->move(direction);
-        return true;
-    }
-
-    return false;
-}
-
-bool Game::tryRotate(Direction direction)
-{
-    if (canRotate(direction))
-    {
-        currentShape->rotate(direction);
-        return true;
-    }
-
-    return false;
-}
-
-bool Game::canRotate(Direction direction)
-{
-    if (!currentShape) return false;
-
-    Shape shapeCopy(*currentShape);
-    
-    if (direction == Direction::Left || direction == Direction::Right)
-    {
-        shapeCopy.rotate(direction);
-        return field.isValidMove(shapeCopy.getGridPos(), shapeCopy);
-    }
-    else
-    {
-        return false;
-    }
-}
-
 void Game::startFrame()
 {
     frameStart = SDL_GetTicks();
@@ -328,18 +275,15 @@ void Game::endFrame()
 
 void Game::render()
 {
+    graphics.clear(0, 0, 0);
+
     if (state == GameState::InGame)
     {
-        field.draw(graphics);
-
-        if (currentShape)
-        {
-            currentShape->draw(graphics, field.getScreenPos());
-        }
+        field.render(graphics);
 
         if (nextShape)
         {
-            nextShape->draw(graphics, 100, 100);
+            nextShape->render(graphics);
         }
     }
     else if (state == GameState::Title)

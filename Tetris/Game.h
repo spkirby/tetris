@@ -26,9 +26,13 @@ protected:
 
     Graphics& graphics;
     Sound& sound;
-
-    bool keyPressed;
+    Keyboard keyboard;
+    PlayField field;
+    StatusPanel statusPanel;
     GameState state;
+    Shape* nextShape;
+    bool keyPressed;
+    bool rotateLocked;
     int level;
     int score;
     int fallDelay;
@@ -37,21 +41,11 @@ protected:
     int linesThisLevel, totalLines;
     Uint32 frameStart, timePerFrame;
 
-    Keyboard keyboard;
-    PlayField field;
-    StatusPanel statusPanel;
-
-    Shape *currentShape, *nextShape;
-    const Uint8 *keystate;
-
-    bool isAnyKeyDown();
-    void handleEvents();
-    bool tryMoveShape(Direction direction);
-    bool canMoveShape(Direction direction);
-    bool tryRotate(Direction direction);
-    bool canRotate(Direction direction);
-    void startFrame();
+    void checkForMove();
     void endFrame();
+    void handleEvents();
+    void moveShape();
     void reset();
-    bool isKeyDown(SDL_Keycode keycode);
+    void startFrame();
+    void update();
 };

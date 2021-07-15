@@ -11,6 +11,8 @@ public:
     Point(int x, int y);
     Point(Direction direction);
 
-    Point operator +(Point& other);
-    Point operator -(Point& other);
+    Point operator +(const Point& other);
+    Point& operator +=(const Point& other);
+    Point operator -(const Point& other);
+    Point& operator -=(const Point& other);
 };

@@ -7,11 +7,11 @@ class StatusNumber : public Entity
 {
 public:
     StatusNumber();
-    void setValue(unsigned int value);
     virtual void render(Graphics& graphics) override;
+    void setValue(unsigned int value);
 
 protected:
     unsigned int value;
-    bool isDirty;
+    char buffer[7];
 };
 

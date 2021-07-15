@@ -34,12 +34,26 @@ Point::Point(Direction direction) :
     }
 }
 
-Point Point::operator +(Point& other)
+Point Point::operator +(const Point& other)
 {
     return Point(x + other.x, y + other.y);
 }
 
-Point Point::operator -(Point& other)
+Point& Point::operator +=(const Point& other)
+{
+    this->x += other.x;
+    this->y += other.y;
+    return *this;
+}
+
+Point Point::operator -(const Point& other)
 {
     return Point(x - other.x, y - other.y);
+}
+
+Point& Point::operator -=(const Point& other)
+{
+    this->x -= other.x;
+    this->y -= other.y;
+    return *this;
 }

@@ -22,8 +22,6 @@ void StatusPanel::setScore(int score)
 
 void StatusPanel::render(Graphics& graphics)
 {
-    graphics.renderImage(ImageId::Logo, position + Point(482, 192));
-
     graphics.renderImage(ImageId::StatusNext, position);
 
     graphics.renderImage(ImageId::StatusLines, position + Point(0, 200));

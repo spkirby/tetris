@@ -1,48 +1,74 @@
 #include <cstring>
-#include "PlayField.h"
 #include "Graphics.h"
+#include "PlayField.h"
+#include "Point.h"
 #include "Shape.h"
 
 PlayField::PlayField()
 {
-    screenPos.x = 550;
-    screenPos.y = 50;
-
+    position = Point(550, 50);
     reset();
 }
 
 void PlayField::reset()
 {
+    shape = nullptr;
     animationTime = 0;
-
     linesToRemove[0] = linesToRemove[1] = linesToRemove[2] = linesToRemove[3] = -1;
+    clearField();
+}
 
-    for (int y = 0; y < FIELD_HEIGHT - 1; y++)
+bool PlayField::hasShape()
+{
+    return shape != nullptr;
+}
+
+void PlayField::setShape(Shape* newShape)
+{
+    if (shape)
     {
-        for (int x = 1; x < FIELD_WIDTH - 1; x++)
+        delete shape;
+    }
+
+    if (newShape)
+    {
+        shapePosition = Point(
+            (PlayField::FIELD_WIDTH / 2) - 2,
+            (newShape->getType() == ShapeType::SHAPE_I) ? 1 : 2
+        );
+    }
+    else
+    {
+        shapePosition = Point(0, 0);
+    }
+
+    shape = newShape;
+}
+
+void PlayField::clearField()
+{
+    for (int y = 0; y < FIELD_HEIGHT; y++)
+    {
+        for (int x = 0; x < FIELD_WIDTH; x++)
         {
-            field[y][x] = ImageId::BlockEmpty;
+            if (x == 0 || x == FIELD_WIDTH - 1 || y == FIELD_HEIGHT - 1)
+            {
+                setBlock(x, y, ImageId::Boundary);
+            }
+            else
+            {
+                setBlock(x, y, ImageId::BlockEmpty);
+            }
         }
-    }
-
-    for(int y=0; y < FIELD_HEIGHT; y++)
-    {
-        field[y][0] = ImageId::Boundary;
-        field[y][FIELD_WIDTH-1] = ImageId::Boundary;
-    }
-
-    for (int x = 1; x < FIELD_WIDTH - 1; x++)
-    {
-        field[FIELD_HEIGHT - 1][x] = ImageId::Boundary;
     }
 }
 
-void PlayField::draw(Graphics& graphics)
+void PlayField::render(Graphics& graphics)
 {
     bool flashLine;
     int ltrIndex = 0;
 
-    for (int y = FIELD_HEIGHT - 1; y >= FIELD_VIS_TOP; y--)
+    for (int y = FIELD_VIS_TOP; y < FIELD_HEIGHT; y++)
     {
         flashLine = false;
 
@@ -62,13 +88,31 @@ void PlayField::draw(Graphics& graphics)
             }
             else
             {
-                imgIndex = field[y][x];
+                imgIndex = getBlock(x, y);
             }
 
             Point offset(x * Shape::BLOCK_SIZE, (y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE);
-
-            graphics.renderImage(imgIndex, screenPos + offset);
+            graphics.renderImage(imgIndex, position + offset);
         }
+    }
+
+    if (shape)
+    {
+        SDL_Rect rect =
+        {
+            position.x,
+            position.y,
+            FIELD_WIDTH * Shape::BLOCK_SIZE,
+            (FIELD_HEIGHT - FIELD_VIS_TOP) * Shape::BLOCK_SIZE,
+        };
+
+        graphics.setClippingRect(&rect);
+
+        Point offset = Point(shapePosition.x * Shape::BLOCK_SIZE, (shapePosition.y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE);
+        shape->position = position + offset;
+        shape->render(graphics);
+
+        graphics.setClippingRect(nullptr);
     }
 }
 
@@ -78,18 +122,23 @@ void PlayField::drawOutline(Graphics& graphics)
     {
         for (int x = 0; x < FIELD_WIDTH; x++)
         {
-            if (field[y][x] == ImageId::Boundary)
+            if (getBlock(x, y) == ImageId::Boundary)
             {
                 Point offset(x * Shape::BLOCK_SIZE, (y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE);
-                graphics.renderImage(ImageId::Boundary, screenPos + offset);
+                graphics.renderImage(ImageId::Boundary, position + offset);
             }
         }
     }
 }
 
-Point PlayField::getScreenPos()
+ImageId PlayField::getBlock(int x, int y)
 {
-    return screenPos;
+    return field[y][x];
+}
+
+ImageId PlayField::setBlock(int x, int y, ImageId value)
+{
+    return field[y][x] = value;
 }
 
 bool PlayField::isValidMove(Point& newPosition, Shape& shape)
@@ -98,7 +147,7 @@ bool PlayField::isValidMove(Point& newPosition, Shape& shape)
     {
         for (int x = 0; x < 4; x++)
         {
-            if (!shape.isEmpty(x, y) && field[newPosition.y + y][newPosition.x + x] != ImageId::BlockEmpty)
+            if (!shape.isEmpty(x, y) && getBlock(newPosition.x + x, newPosition.y + y) != ImageId::BlockEmpty)
             {
                 return false;
             }
@@ -108,8 +157,10 @@ bool PlayField::isValidMove(Point& newPosition, Shape& shape)
     return true;
 }
 
-int PlayField::checkForLines(Shape* shape)
+int PlayField::checkForCompletedLines()
 {
+    if (!shape) return 0;
+
     int line = FIELD_HEIGHT - 2;
     int linesComplete = 0;
 
@@ -131,7 +182,7 @@ int PlayField::checkForLines(Shape* shape)
 
     if (linesComplete)
     {
-        animationTime = DEFAULT_ANIM_TIME;
+        animationTime = INITIAL_ANIMATION_TIME;
     }
 
     return linesComplete;
@@ -143,7 +194,7 @@ bool PlayField::isLineComplete(int line)
 
     for (int x = 1; complete && x < FIELD_WIDTH - 1; x++)
     {
-        if (field[line][x] == ImageId::BlockEmpty)
+        if (getBlock(x, line) == ImageId::BlockEmpty)
         {
             complete = false;
         }
@@ -158,15 +209,73 @@ void PlayField::removeLine(int line)
     memset(field[0] + 1, 0, FIELD_WIDTH - 2);
 }
 
-bool PlayField::isShapeInsideField(Shape &shape)
+bool PlayField::tryMoveShape(Direction direction)
 {
-    Point shapePos = shape.getGridPos();
+    if (shape)
+    {
+        Point newPosition = shapePosition + Point(direction);
 
-    for (int y = 0; y < 4 && (shapePos.y + y < FIELD_VIS_TOP); y++)
+        if (isValidMove(newPosition, *shape))
+        {
+            shapePosition = newPosition;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool PlayField::tryRotateShape(Direction direction)
+{
+    if (shape && (direction == Direction::Left || direction == Direction::Right))
+    {
+        Shape shapeCopy(*shape);
+        shapeCopy.rotate(direction);
+        
+        if (isValidMove(shapePosition, shapeCopy))
+        {
+            shape->rotate(direction);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool PlayField::tryAbsorbShape(int& completedLines)
+{
+    if (!shape || !isShapeInsideField())
+    {
+        return false;
+    }
+
+    for (int y = 0; y < 4; y++)
     {
         for (int x = 0; x < 4; x++)
         {
-            if (!shape.isEmpty(x, y))
+            if (!shape->isEmpty(x, y))
+            {
+                setBlock(shapePosition.x + x, shapePosition.y + y, shape->getShapeBlock(x, y));
+            }
+        }
+    }
+
+    setShape(nullptr);
+    completedLines = checkForCompletedLines();
+
+    return true;
+}
+
+
+bool PlayField::isShapeInsideField()
+{
+    if (!shape) return false;
+
+    for (int y = shapePosition.y; y < FIELD_VIS_TOP; y++)
+    {
+        for (int x = 0; x < 4; x++)
+        {
+            if (!shape->isEmpty(x, y))
             {
                 return false;
             }
@@ -174,22 +283,6 @@ bool PlayField::isShapeInsideField(Shape &shape)
     }
 
     return true;
-}
-
-void PlayField::absorbShape(Shape& shape)
-{
-    Point shapePos = shape.getGridPos();
-
-    for (int y = 0; y < 4; y++)
-    {
-        for (int x = 0; x < 4; x++)
-        {
-            if (!shape.isEmpty(x, y))
-            {
-                field[shapePos.y + y][shapePos.x + x] = shape.getShapeBlock(x, y);
-            }
-        }
-    }
 }
 
 bool PlayField::isAnimating()
