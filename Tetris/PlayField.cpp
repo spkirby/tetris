@@ -1,4 +1,5 @@
 #include <cstring>
+#include <algorithm>
 #include "Graphics.h"
 #include "PlayField.h"
 #include "Point.h"
@@ -6,7 +7,6 @@
 
 PlayField::PlayField()
 {
-    position = Point(550, 50);
     reset();
 }
 
@@ -14,7 +14,7 @@ void PlayField::reset()
 {
     shape = nullptr;
     animationTime = 0;
-    linesToRemove[0] = linesToRemove[1] = linesToRemove[2] = linesToRemove[3] = -1;
+    completedLines.fill(false);
     clearField();
 }
 
@@ -47,42 +47,28 @@ void PlayField::setShape(Shape* newShape)
 
 void PlayField::clearField()
 {
-    for (int y = 0; y < FIELD_HEIGHT; y++)
+    for (int y = 0; y < FIELD_HEIGHT - 1; y++)
     {
-        for (int x = 0; x < FIELD_WIDTH; x++)
-        {
-            if (x == 0 || x == FIELD_WIDTH - 1 || y == FIELD_HEIGHT - 1)
-            {
-                setBlock(x, y, ImageId::Boundary);
-            }
-            else
-            {
-                setBlock(x, y, ImageId::BlockEmpty);
-            }
-        }
+        clearLine(y);
+    }
+
+    for (int x = 0; x < FIELD_WIDTH; x++)
+    {
+        setBlock(x, FIELD_HEIGHT - 1, ImageId::Boundary);
     }
 }
 
 void PlayField::render(Graphics& graphics)
 {
-    bool flashLine;
-    int ltrIndex = 0;
+    bool isFlashFrame = animationTime > 0 && (animationTime / 3) % 2 == 0;
 
     for (int y = FIELD_VIS_TOP; y < FIELD_HEIGHT; y++)
     {
-        flashLine = false;
-
-        if (ltrIndex < 4 && y == linesToRemove[ltrIndex])
-        {
-            flashLine = (animationTime > 0 && (animationTime / 3) % 2 == 0);
-            ltrIndex++;
-        }
-
         for (int x = 0; x < FIELD_WIDTH; x++)
         {
             ImageId imgIndex;
 
-            if (flashLine && x > 0 && x < FIELD_WIDTH - 1)
+            if (isFlashFrame && completedLines[y] && x > 0 && x < FIELD_WIDTH - 1)
             {
                 imgIndex = ImageId::BlockEmpty;
             }
@@ -157,56 +143,44 @@ bool PlayField::isValidMove(Point& newPosition, Shape& shape)
     return true;
 }
 
-int PlayField::checkForCompletedLines()
+int PlayField::getCompletedLineCount()
 {
-    if (!shape) return 0;
-
-    int line = FIELD_HEIGHT - 2;
-    int linesComplete = 0;
-
-    linesToRemove[0] = -1;
-    linesToRemove[1] = -1;
-    linesToRemove[2] = -1;
-    linesToRemove[3] = -1;
-
-    while (line > 0)
-    {
-        if (isLineComplete(line))
-        {
-            linesToRemove[linesComplete] = line;
-            linesComplete++;
-        }
-
-        line--;
-    }
-
-    if (linesComplete)
-    {
-        animationTime = INITIAL_ANIMATION_TIME;
-    }
-
-    return linesComplete;
+    return std::count(completedLines.begin(), completedLines.end(), true);
 }
 
-bool PlayField::isLineComplete(int line)
+void PlayField::updateCompletedLines()
 {
-    bool complete = true;
-
-    for (int x = 1; complete && x < FIELD_WIDTH - 1; x++)
+    for (int y = 0; y < FIELD_HEIGHT - 1; y++)
     {
-        if (getBlock(x, line) == ImageId::BlockEmpty)
-        {
-            complete = false;
-        }
-    }
+        bool hasEmpty = false;
 
-    return complete;
+        for (int x = 1; !hasEmpty && x < FIELD_WIDTH - 1; x++)
+        {
+            if (getBlock(x, y) == ImageId::BlockEmpty)
+            {
+                hasEmpty = true;
+            }
+        }
+
+        completedLines[y] = !hasEmpty;
+    }
+}
+
+void PlayField::clearLine(int line)
+{
+    setBlock(0, line, ImageId::Boundary);
+    setBlock(FIELD_WIDTH - 1, line, ImageId::Boundary);
+
+    for (int x = 1; x < FIELD_WIDTH - 1; x++)
+    {
+        setBlock(x, line, ImageId::BlockEmpty);
+    }
 }
 
 void PlayField::removeLine(int line)
 {
-    memmove(field[1], field[0], sizeof(int) * FIELD_WIDTH * line);
-    memset(field[0] + 1, 0, FIELD_WIDTH - 2);
+    memmove(field[1], field[0], FIELD_WIDTH * line * sizeof(int));
+    clearLine(0);
 }
 
 bool PlayField::tryMoveShape(Direction direction)
@@ -242,7 +216,7 @@ bool PlayField::tryRotateShape(Direction direction)
     return false;
 }
 
-bool PlayField::tryAbsorbShape(int& completedLines)
+bool PlayField::tryAbsorbShape()
 {
     if (!shape || !isShapeInsideField())
     {
@@ -261,7 +235,12 @@ bool PlayField::tryAbsorbShape(int& completedLines)
     }
 
     setShape(nullptr);
-    completedLines = checkForCompletedLines();
+    updateCompletedLines();
+
+    if (getCompletedLineCount() > 0)
+    {
+        animationTime = INITIAL_ANIMATION_TIME;
+    }
 
     return true;
 }
@@ -296,16 +275,16 @@ bool PlayField::update()
 
     if (isAnimating() && --animationTime == 0)
     {
-        for (int i = 3; i >= 0; i--)
+        for (size_t y = 0; y < completedLines.size(); y++)
         {
-            if (linesToRemove[i] != -1)
+            if (completedLines[y])
             {
-                removeLine(linesToRemove[i]);
+                removeLine(y);
                 linesRemoved = true;
             }
-
-            linesToRemove[i] = -1;
         }
+
+        completedLines.fill(false);
     }
 
     return linesRemoved;

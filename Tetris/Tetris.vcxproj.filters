@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Resource Files\gfx">
+      <UniqueIdentifier>{50c40f86-326f-44fc-8473-41228e9852e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\sound">
+      <UniqueIdentifier>{1de09249-f7ff-4308-811e-68a2361ceff9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Game.cpp">
@@ -97,5 +103,48 @@
     <ResourceCompile Include="Tetris.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="gfx\blocks.bmp">
+      <Filter>Resource Files\gfx</Filter>
+    </Image>
+    <Image Include="gfx\digits.bmp">
+      <Filter>Resource Files\gfx</Filter>
+    </Image>
+    <Image Include="gfx\icon.bmp">
+      <Filter>Resource Files\gfx</Filter>
+    </Image>
+    <Image Include="gfx\level.bmp">
+      <Filter>Resource Files\gfx</Filter>
+    </Image>
+    <Image Include="gfx\lines.bmp">
+      <Filter>Resource Files\gfx</Filter>
+    </Image>
+    <Image Include="gfx\logo.bmp">
+      <Filter>Resource Files\gfx</Filter>
+    </Image>
+    <Image Include="gfx\next.bmp">
+      <Filter>Resource Files\gfx</Filter>
+    </Image>
+    <Image Include="gfx\score.bmp">
+      <Filter>Resource Files\gfx</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="sound\gameover.wav">
+      <Filter>Resource Files\sound</Filter>
+    </Media>
+    <Media Include="sound\line.wav">
+      <Filter>Resource Files\sound</Filter>
+    </Media>
+    <Media Include="sound\rotate.wav">
+      <Filter>Resource Files\sound</Filter>
+    </Media>
+    <Media Include="sound\start.wav">
+      <Filter>Resource Files\sound</Filter>
+    </Media>
+    <Media Include="sound\thud.wav">
+      <Filter>Resource Files\sound</Filter>
+    </Media>
   </ItemGroup>
 </Project>

@@ -29,7 +29,7 @@ void StatusNumber::render(Graphics& graphics)
 {
     Point pos = Point(position);
     
-    for (int i = strlen(buffer) - 1; i >= 0; i--)
+    for (size_t i = 0; i < strlen(buffer); i++)
     {
         int width = graphics.renderDigit(buffer[i] - '0', pos);
         pos.x += (4 + width);

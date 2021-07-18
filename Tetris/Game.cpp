@@ -9,12 +9,14 @@
 
 Game::Game(Graphics& graphics, Sound& sound) :
     graphics(graphics),
-    sound(sound)
+    sound(sound),
+    nextShape(nullptr)
 {
     state = GameState::NotStarted;
-    nextShape = nullptr;
-    fallDelay = INITIAL_FALL_DELAY;
+    field.position = Point(550, 50);
     statusPanel.position = Point(100, 50);
+    
+    reset();
 }
 
 Game::~Game()
@@ -27,46 +29,36 @@ Game::~Game()
 
 void Game::start()
 {
-    state = GameState::Title;
     reset();
-    render();
 
-    while (state != GameState::Quitting)
+    do
     {
-        handleEvents();
+        state = GameState::Title;
+        showTitleScreen();
 
-        if (keyPressed)
+        if (state != GameState::Quitting)
         {
+            state = GameState::InGame;
+
             sound.play(SOUND_START);
             reset();
             play();
-
-            if (state != GameState::Quitting)
-            {
-                state = GameState::Title;
-                render();
-
-                do // Wait until no keys are pressed
-                {
-                    handleEvents();
-                }
-                while (keyboard.isAnyKeyDown());
-            }
         }
     }
-
-    state = GameState::NotStarted;
+    while (state != GameState::Quitting);
 }
 
 void Game::reset()
 {
-    framesUntilFall = fallDelay;
-    framesUntilMove = MOVEMENT_RECHARGE_TIME;
-    linesThisLevel = 0;
+    fallDelay = INITIAL_FALL_DELAY;
+    fallCooldown = fallDelay;
+    moveCooldown = MOVE_COOLDOWN_TIME;
+    rotateLocked = false;
 
     level = 1;
     score = 0;
     totalLines = 0;
+    linesUntilNextLevel = 10;
 
     if (nextShape)
     {
@@ -78,39 +70,61 @@ void Game::reset()
 
     nextShape = Shape::createRandom();
     nextShape->position = Point(100, 100);
+}
 
-    graphics.clear(0, 0, 0);
+void Game::showTitleScreen()
+{
+    render();
+
+    while (state != GameState::Quitting && keyboard.isAnyKeyDown())
+    {
+        waitForEvent();
+    }
+
+    while (state != GameState::Quitting && !keyboard.isAnyKeyDown())
+    {
+        waitForEvent();
+    }
+
+    if (state != GameState::Quitting)
+    {
+        state = GameState::InGame;
+    }
 }
 
 void Game::play()
 {
-    state = GameState::InGame;
-
     while (state == GameState::InGame)
     {
-        startFrame();
-        handleEvents();
+        Uint32 frameStart = startFrame();
+        pollEvents();
         update();
         render();
-        endFrame();
+        endFrame(frameStart);
     }
 }
 
 void Game::update()
 {
-    rotateLocked = false;
-
     if (field.hasShape())
     {
-        if (framesUntilMove-- == 0)
+        if (moveCooldown == 0)
         {
-            checkForMove();
+            checkForPlayerMove();
+        }
+        else
+        {
+            moveCooldown--;
         }
 
-        if (framesUntilFall-- == 0)
+        if (fallCooldown-- == 0)
         {
-            moveShape();
-            framesUntilFall = fallDelay;
+            if (!field.tryMoveShape(Direction::Down))
+            {
+                checkForCompletedLines();
+            }
+            
+            fallCooldown = fallDelay;
         }
     }
 
@@ -128,7 +142,7 @@ void Game::update()
     }
 }
 
-void Game::checkForMove()
+void Game::checkForPlayerMove()
 {
     bool hasMoved = false;
 
@@ -148,17 +162,17 @@ void Game::checkForMove()
             rotateLocked = true;
         }
     }
-    else if (keyboard.isKeyDown(SDLK_LEFT) && field.tryMoveShape(Direction::Left))
+    else if (keyboard.isKeyDown(SDLK_LEFT))
     {
-        hasMoved = true;
+        hasMoved = field.tryMoveShape(Direction::Left);
     }
-    else if (keyboard.isKeyDown(SDLK_RIGHT) && field.tryMoveShape(Direction::Right))
+    else if (keyboard.isKeyDown(SDLK_RIGHT))
     {
-        hasMoved = true;
+        hasMoved = field.tryMoveShape(Direction::Right);
     }
     else if (keyboard.isKeyDown(SDLK_DOWN))
     {
-        framesUntilFall = 0;
+        fallCooldown = 0;
     }
 
     if (!keyboard.isKeyDown(SDLK_a) && !keyboard.isKeyDown(SDLK_s) && !keyboard.isKeyDown(SDLK_UP))
@@ -168,108 +182,124 @@ void Game::checkForMove()
 
     if (hasMoved)
     {
-        framesUntilMove = MOVEMENT_RECHARGE_TIME;
+        moveCooldown = MOVE_COOLDOWN_TIME;
     }
 }
 
-void Game::moveShape()
+void Game::checkForCompletedLines()
 {
-    if (!field.tryMoveShape(Direction::Down)) // Shape has landed
-    {
-        int completedLines = 0;
-        sound.play(SOUND_THUD);
+    sound.play(SOUND_THUD);
 
-        if (field.tryAbsorbShape(completedLines))
+    if (field.tryAbsorbShape())
+    {
+        int completedLines = field.getCompletedLineCount();
+
+        if (completedLines > 0)
         {
-            if (completedLines > 0)
-            {
-                sound.play(SOUND_LINE);
-            }
+            sound.play(SOUND_LINE);
 
             switch (completedLines)
             {
-            case 1: score += 40 * level; break;
-            case 2: score += 100 * level; break;
-            case 3: score += 300 * level; break;
-            case 4: score += 1200 * level; break;
-            default: break;
+            case 1:
+                score += 40 * level;
+                break;
+            case 2:
+                score += 100 * level;
+                break;
+            case 3:
+                score += 300 * level;
+                break;
+            default:
+                score += 1200 * level;
+                break;
             }
 
             totalLines += completedLines;
-            linesThisLevel += completedLines;
+            linesUntilNextLevel -= completedLines;
 
-            if (linesThisLevel >= 10)
+            if (linesUntilNextLevel <= 0)
             {
                 level++;
-                linesThisLevel -= 10;
-
-                if (fallDelay > 0)
-                {
-                    fallDelay -= 2;
-                }
+                linesUntilNextLevel += 10;
+                fallDelay = std::max(1, fallDelay - 2);
             }
+        }
 
-            framesUntilMove = 0;
-        }
-        else // Shape is outside the well - game over!
-        {
-            state = GameState::GameOver;
-            sound.play(SOUND_GAME_OVER);
-        }
+        moveCooldown = 0;
+    }
+    else // Shape is outside the well - game over!
+    {
+        state = GameState::GameOver;
+        sound.play(SOUND_GAME_OVER);
     }
 }
 
-void Game::handleEvents()
+void Game::pollEvents()
 {
     SDL_Event event;
-    keyPressed = false;
-    
-    // TODO: Stop this pegging 100% CPU!!
+
     while (state != GameState::Quitting && SDL_PollEvent(&event))
     {
-        // Handle SDL Events
-        switch (event.type)
-        {
-            case SDL_QUIT:
-                state = GameState::Quitting;
-                break;
-
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym)
-                {
-                    case SDLK_ESCAPE:
-                        state = GameState::Title;
-                        break;
-
-                    case SDLK_F4:
-                        if (event.key.keysym.mod & KMOD_ALT)
-                            state = GameState::Quitting;
-                        break;
-
-                    case SDLK_LALT:
-                    case SDLK_RALT:
-                        break;
-
-                    default:
-                        keyPressed = true;
-                }
-                break;
-        }
+        handleEvent(event);
     }
 }
 
-void Game::startFrame()
+void Game::waitForEvent()
 {
-    frameStart = SDL_GetTicks();
+    SDL_Event event;
+    SDL_WaitEvent(&event);
+    handleEvent(event);
 }
 
-void Game::endFrame()
+void Game::handleEvent(SDL_Event& event)
 {
-    Uint32 timeLeft = TIME_PER_FRAME - (SDL_GetTicks() - frameStart);
-
-    if (timeLeft > 0 && timeLeft < TIME_PER_FRAME)
+    switch (event.type)
     {
-        SDL_Delay(timeLeft);
+        case SDL_QUIT:
+            state = GameState::Quitting;
+            break;
+
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym)
+            {
+                case SDLK_ESCAPE:
+                    if (state == GameState::Title)
+                    {
+                        state = GameState::Quitting;
+                    }
+                    else
+                    {
+                        state = GameState::Title;
+                    }
+                    break;
+
+                case SDLK_F4:
+                    if (event.key.keysym.mod & KMOD_ALT)
+                    {
+                        state = GameState::Quitting;
+                    }
+                    break;
+
+                case SDLK_LALT:
+                case SDLK_RALT:
+                    break;
+            }
+            break;
+    }
+}
+
+Uint32 Game::startFrame()
+{
+    return SDL_GetTicks();
+}
+
+void Game::endFrame(Uint32 frameStart)
+{
+    Uint32 timeRemaining = TIME_PER_FRAME - (SDL_GetTicks() - frameStart);
+
+    if (timeRemaining > 0 && timeRemaining < TIME_PER_FRAME)
+    {
+        SDL_Delay(timeRemaining);
     }
 }
 
@@ -294,7 +324,7 @@ void Game::render()
 
     statusPanel.setLevel(level);
     statusPanel.setScore(score);
-    statusPanel.setLines(linesThisLevel);
+    statusPanel.setLines(totalLines);
     statusPanel.render(graphics);
 
     graphics.update();

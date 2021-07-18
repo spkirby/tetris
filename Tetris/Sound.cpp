@@ -4,7 +4,9 @@
 Sound::Sound()
 {
     if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 2, 1024) != 0)
+    {
         throw Mix_GetError();
+    }
 
     sounds[SOUND_THUD] = loadSound("sound/thud.wav");
     sounds[SOUND_ROTATE] = loadSound("sound/rotate.wav");
