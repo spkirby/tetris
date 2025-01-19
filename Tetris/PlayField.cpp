@@ -34,7 +34,7 @@ void PlayField::setShape(Shape* newShape)
     {
         shapePosition = Point(
             (PlayField::FIELD_WIDTH / 2) - 2,
-            (newShape->getType() == ShapeType::SHAPE_I) ? 1 : 2
+            (newShape->getType() == ShapeType::ShapeI) ? 1 : 2
         );
     }
     else

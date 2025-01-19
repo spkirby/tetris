@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <stdexcept>
 
-const int Shape::shapes[(int)ShapeType::NUM_OF_SHAPES][4][4][4] =
+const int Shape::shapes[(int)ShapeType::Count][4][4][4] =
 {
     // I
     {
@@ -215,7 +215,7 @@ Shape::Shape(ShapeType type)
 
 Shape* Shape::createRandom()
 {
-    return new Shape((ShapeType)(rand() % (int)ShapeType::NUM_OF_SHAPES));
+    return new Shape((ShapeType)(rand() % (int)ShapeType::Count));
 }
 
 ImageId Shape::getShapeBlock(int x, int y)

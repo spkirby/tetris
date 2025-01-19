@@ -6,14 +6,14 @@
 
 enum class ShapeType
 {
-    SHAPE_I,
-    SHAPE_J,
-    SHAPE_L,
-    SHAPE_O,
-    SHAPE_S,
-    SHAPE_T,
-    SHAPE_Z,
-    NUM_OF_SHAPES
+    ShapeI,
+    ShapeJ,
+    ShapeL,
+    ShapeO,
+    ShapeS,
+    ShapeT,
+    ShapeZ,
+    Count
 };
 
 class Shape : public Entity
@@ -36,7 +36,7 @@ public:
 protected:
     // Array containing all rotations of all shapes.
     // Shapes (7) x rotations (4) x width (4) x height (4)
-    static const int shapes[(int)ShapeType::NUM_OF_SHAPES][4][4][4];
+    static const int shapes[(int)ShapeType::Count][4][4][4];
 
     ShapeType shapeType;
     int rotation;

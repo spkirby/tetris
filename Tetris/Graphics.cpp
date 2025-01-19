@@ -64,7 +64,7 @@ SDL_Texture* Graphics::getImage(ImageId imageId)
 {
     if (imageId < (ImageId)0 || imageId >= ImageId::Count)
     {
-        throw new std::out_of_range("Invalid Image ID");
+        throw std::out_of_range("Invalid Image ID");
     }
 
     return images[(int)imageId];
@@ -199,7 +199,7 @@ int Graphics::renderDigit(int digit, Point& point)
 {
     if (digit < 0 || digit > 9)
     {
-        throw new std::out_of_range("Invalid digit");
+        throw std::out_of_range("Invalid digit");
     }
 
     SDL_Rect* srcRect = &digitRects[digit];
