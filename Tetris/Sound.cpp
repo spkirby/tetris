@@ -8,20 +8,21 @@ Sound::Sound()
         throw Mix_GetError();
     }
 
-    sounds[SOUND_THUD] = loadSound("sound/thud.wav");
-    sounds[SOUND_ROTATE] = loadSound("sound/rotate.wav");
-    sounds[SOUND_LINE] = loadSound("sound/line.wav");
-    sounds[SOUND_START] = loadSound("sound/start.wav");
-    sounds[SOUND_GAME_OVER] = loadSound("sound/gameover.wav");
+    sounds[(int)SoundId::Thud] = loadSound("sound/thud.wav");
+    sounds[(int)SoundId::Rotate] = loadSound("sound/rotate.wav");
+    sounds[(int)SoundId::LineComplete] = loadSound("sound/line.wav");
+    sounds[(int)SoundId::StartGame] = loadSound("sound/start.wav");
+    sounds[(int)SoundId::GameOver] = loadSound("sound/gameover.wav");
 }
 
 Sound::~Sound()
 {
-    for (int i = 0; i < NUM_OF_SOUNDS; i++)
+    for (int i = 0; i < (int)SoundId::Count; i++)
     {
         if (sounds[i])
         {
             Mix_FreeChunk(sounds[i]);
+            sounds[i] = nullptr;
         }
     }
 
@@ -34,11 +35,11 @@ Mix_Chunk* Sound::loadSound(char* filename)
     return Mix_LoadWAV(filename);
 }
 
-void Sound::play(SoundId soundIndex)
+void Sound::play(SoundId soundId)
 {
-    if (sounds[soundIndex] != nullptr)
+    if (sounds[(int)soundId] != nullptr)
     {
-        Mix_PlayChannel(-1, sounds[soundIndex], 0);
+        Mix_PlayChannel(-1, sounds[(int)soundId], 0);
     }
 }
 

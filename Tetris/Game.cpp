@@ -40,7 +40,7 @@ void Game::start()
         {
             state = GameState::InGame;
 
-            sound.play(SOUND_START);
+            sound.play(SoundId::StartGame);
             reset();
             play();
         }
@@ -138,7 +138,7 @@ void Game::update()
 
     if (field.update())
     {
-        sound.play(SOUND_THUD);
+        sound.play(SoundId::Thud);
     }
 }
 
@@ -150,7 +150,7 @@ void Game::checkForPlayerMove()
     {
         if (field.tryRotateShape(Direction::Left))
         {
-            sound.play(SOUND_ROTATE);
+            sound.play(SoundId::Rotate);
             rotateLocked = true;
         }
     }
@@ -158,7 +158,7 @@ void Game::checkForPlayerMove()
     {
         if (field.tryRotateShape(Direction::Right))
         {
-            sound.play(SOUND_ROTATE);
+            sound.play(SoundId::Rotate);
             rotateLocked = true;
         }
     }
@@ -188,7 +188,7 @@ void Game::checkForPlayerMove()
 
 void Game::checkForCompletedLines()
 {
-    sound.play(SOUND_THUD);
+    sound.play(SoundId::Thud);
 
     if (field.tryAbsorbShape())
     {
@@ -196,7 +196,7 @@ void Game::checkForCompletedLines()
 
         if (completedLines > 0)
         {
-            sound.play(SOUND_LINE);
+            sound.play(SoundId::LineComplete);
 
             switch (completedLines)
             {
@@ -230,7 +230,7 @@ void Game::checkForCompletedLines()
     else // Shape is outside the well - game over!
     {
         state = GameState::GameOver;
-        sound.play(SOUND_GAME_OVER);
+        sound.play(SoundId::GameOver);
     }
 }
 

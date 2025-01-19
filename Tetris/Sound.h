@@ -2,14 +2,14 @@
 #include "SDL.h"
 #include "SDL_mixer.h"
 
-enum SoundId
+enum class SoundId
 {
-    SOUND_THUD = 0,
-    SOUND_ROTATE,
-    SOUND_LINE,
-    SOUND_START,
-    SOUND_GAME_OVER,
-    NUM_OF_SOUNDS
+    Thud,
+    Rotate,
+    LineComplete,
+    StartGame,
+    GameOver,
+    Count // Count of SoundId entries
 };
 
 class Sound
@@ -17,11 +17,11 @@ class Sound
 public:
     Sound();
     ~Sound();
-    void play(SoundId soundIndex);
+    void play(SoundId soundId);
     void stopAll();
 
 protected:
-    Mix_Chunk* sounds[NUM_OF_SOUNDS] = { nullptr };
+    Mix_Chunk* sounds[(int)SoundId::Count] = { nullptr };
 
     Mix_Chunk* loadSound(char* filename);
 };

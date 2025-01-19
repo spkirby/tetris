@@ -2,11 +2,10 @@
 
 enum class Direction
 {
-    None = 0,
-    Up = 1,
-    Right = 2,
-    Down = 3,
-    Left = 4
+    Up,
+    Down,
+    Left,
+    Right
 };
 
 enum class ImageId
