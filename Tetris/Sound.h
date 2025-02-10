@@ -23,5 +23,5 @@ public:
 protected:
     Mix_Chunk* sounds[(int)SoundId::Count] = { nullptr };
 
-    Mix_Chunk* loadSound(char* filename);
+    Mix_Chunk* loadSound(const char* filename);
 };

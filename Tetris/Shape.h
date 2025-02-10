@@ -22,11 +22,11 @@ public:
     static const int MAX_WIDTH = 3;
     static const int MAX_HEIGHT = 3;
     static const int BLOCK_SIZE = 32;
-    static Shape* Shape::createRandom();
 
     Point position;
 
     Shape(ShapeType type);
+    Shape(ShapeType type, Point position);
     ImageId getShapeBlock(int x, int y);
     ShapeType getType();
     bool isEmpty(int x, int y);

@@ -18,7 +18,7 @@ public:
     /// </summary>
     int renderDigit(int digit, Point& point);
 
-    void renderImage(ImageId imageId, Point& point);
+    void renderImage(ImageId imageId, const Point& point);
     void setClippingRect(SDL_Rect* rect);
     void update();
 

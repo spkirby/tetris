@@ -179,7 +179,7 @@ void Graphics::clear(Uint8 r, Uint8 g, Uint8 b)
     SDL_RenderClear(renderer);
 }
 
-void Graphics::renderImage(ImageId imageId, Point& point)
+void Graphics::renderImage(ImageId imageId, const Point& point)
 {
     int w, h;
     SDL_QueryTexture(getImage(imageId), nullptr, nullptr, &w, &h);

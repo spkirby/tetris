@@ -207,15 +207,18 @@ const int Shape::shapes[(int)ShapeType::Count][4][4][4] =
     }
 };
 
-Shape::Shape(ShapeType type)
+Shape::Shape(ShapeType type) :
+    shapeType(type),
+    rotation(0),
+    position(Point(0, 0))
 {
-    shapeType = type;
-    rotation = 0;
 }
 
-Shape* Shape::createRandom()
+Shape::Shape(ShapeType type, Point position) :
+    shapeType(type),
+    rotation(0),
+    position(position)
 {
-    return new Shape((ShapeType)(rand() % (int)ShapeType::Count));
 }
 
 ImageId Shape::getShapeBlock(int x, int y)

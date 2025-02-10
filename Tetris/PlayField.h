@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <optional>
 #include "Entity.h"
 #include "Enums.h"
 #include "Graphics.h"
@@ -16,7 +17,7 @@ public:
     bool isAnimating();
     void render(Graphics& graphics);
     void reset();
-    void setShape(Shape* newShape);
+    void setShapeType(ShapeType newShape);
     bool tryAbsorbShape();
     bool tryMoveShape(Direction direction);
     bool tryRotateShape(Direction direction);
@@ -31,7 +32,7 @@ protected:
     ImageId field[FIELD_HEIGHT][FIELD_WIDTH];
     int animationTime;  // Amount of time for which the field will animate
     std::array<bool, FIELD_HEIGHT> completedLines;
-    Shape* shape;
+    std::optional<Shape> shape;
     Point shapePosition;
 
     void clearField();

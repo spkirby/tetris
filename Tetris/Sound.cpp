@@ -30,7 +30,7 @@ Sound::~Sound()
     Mix_Quit();
 }
 
-Mix_Chunk* Sound::loadSound(char* filename)
+Mix_Chunk* Sound::loadSound(const char* filename)
 {
     return Mix_LoadWAV(filename);
 }

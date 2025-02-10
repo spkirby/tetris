@@ -1,5 +1,6 @@
-#include <cstring>
 #include <algorithm>
+#include <cstring>
+#include <optional>
 #include "Graphics.h"
 #include "PlayField.h"
 #include "Point.h"
@@ -12,7 +13,7 @@ PlayField::PlayField()
 
 void PlayField::reset()
 {
-    shape = nullptr;
+    shape = std::nullopt;
     animationTime = 0;
     completedLines.fill(false);
     clearField();
@@ -20,29 +21,17 @@ void PlayField::reset()
 
 bool PlayField::hasShape()
 {
-    return shape != nullptr;
+    return shape.has_value();
 }
 
-void PlayField::setShape(Shape* newShape)
+void PlayField::setShapeType(ShapeType shapeType)
 {
-    if (shape)
-    {
-        delete shape;
-    }
+    shape = std::optional<Shape>(Shape(shapeType));
 
-    if (newShape)
-    {
-        shapePosition = Point(
-            (PlayField::FIELD_WIDTH / 2) - 2,
-            (newShape->getType() == ShapeType::ShapeI) ? 1 : 2
-        );
-    }
-    else
-    {
-        shapePosition = Point(0, 0);
-    }
-
-    shape = newShape;
+    shapePosition = Point(
+        (PlayField::FIELD_WIDTH / 2) - 2,
+        (shapeType == ShapeType::ShapeI) ? 1 : 2
+    );
 }
 
 void PlayField::clearField()
@@ -82,7 +71,7 @@ void PlayField::render(Graphics& graphics)
         }
     }
 
-    if (shape)
+    if (shape.has_value())
     {
         SDL_Rect rect =
         {
@@ -95,8 +84,8 @@ void PlayField::render(Graphics& graphics)
         graphics.setClippingRect(&rect);
 
         Point offset = Point(shapePosition.x * Shape::BLOCK_SIZE, (shapePosition.y - FIELD_VIS_TOP) * Shape::BLOCK_SIZE);
-        shape->position = position + offset;
-        shape->render(graphics);
+        shape.value().position = position + offset;
+        shape.value().render(graphics);
 
         graphics.setClippingRect(nullptr);
     }
@@ -185,11 +174,11 @@ void PlayField::removeLine(int line)
 
 bool PlayField::tryMoveShape(Direction direction)
 {
-    if (shape)
+    if (shape.has_value())
     {
         Point newPosition = shapePosition + Point(direction);
 
-        if (isValidMove(newPosition, *shape))
+        if (isValidMove(newPosition, shape.value()))
         {
             shapePosition = newPosition;
             return true;
@@ -201,14 +190,14 @@ bool PlayField::tryMoveShape(Direction direction)
 
 bool PlayField::tryRotateShape(Direction direction)
 {
-    if (shape && (direction == Direction::Left || direction == Direction::Right))
+    if (shape.has_value() && (direction == Direction::Left || direction == Direction::Right))
     {
-        Shape shapeCopy(*shape);
+        Shape shapeCopy(shape.value());
         shapeCopy.rotate(direction);
         
         if (isValidMove(shapePosition, shapeCopy))
         {
-            shape->rotate(direction);
+            shape.value().rotate(direction);
             return true;
         }
     }
@@ -218,7 +207,7 @@ bool PlayField::tryRotateShape(Direction direction)
 
 bool PlayField::tryAbsorbShape()
 {
-    if (!shape || !isShapeInsideField())
+    if (!shape.has_value() || !isShapeInsideField())
     {
         return false;
     }
@@ -227,14 +216,14 @@ bool PlayField::tryAbsorbShape()
     {
         for (int x = 0; x < 4; x++)
         {
-            if (!shape->isEmpty(x, y))
+            if (!shape.value().isEmpty(x, y))
             {
-                setBlock(shapePosition.x + x, shapePosition.y + y, shape->getShapeBlock(x, y));
+                setBlock(shapePosition.x + x, shapePosition.y + y, shape.value().getShapeBlock(x, y));
             }
         }
     }
 
-    setShape(nullptr);
+    shape = std::nullopt;
     updateCompletedLines();
 
     if (getCompletedLineCount() > 0)
@@ -248,13 +237,13 @@ bool PlayField::tryAbsorbShape()
 
 bool PlayField::isShapeInsideField()
 {
-    if (!shape) return false;
+    if (!shape.has_value()) return false;
 
     for (int y = shapePosition.y; y < FIELD_VIS_TOP; y++)
     {
         for (int x = 0; x < 4; x++)
         {
-            if (!shape->isEmpty(x, y))
+            if (!shape.value().isEmpty(x, y))
             {
                 return false;
             }

@@ -7,24 +7,21 @@
 #include "Shape.h"
 #include "SDL.h"
 
+const Point Game::FIELD_POSITION = Point(550, 50);
+const Point Game::LOGO_POSITION = Point(582, 242);
+const Point Game::NEXT_SHAPE_POSITION = Point(100, 100);
+const Point Game::STATUS_PANEL_POSITION = Point(100, 50);
+
 Game::Game(Graphics& graphics, Sound& sound) :
     graphics(graphics),
     sound(sound),
-    nextShape(nullptr)
+    nextShape(Shape(ShapeType::ShapeI))
 {
     state = GameState::NotStarted;
-    field.position = Point(550, 50);
-    statusPanel.position = Point(100, 50);
+    field.position = FIELD_POSITION;
+    statusPanel.position = STATUS_PANEL_POSITION;
     
     reset();
-}
-
-Game::~Game()
-{
-    if (nextShape)
-    {
-        delete nextShape;
-    }
 }
 
 void Game::start()
@@ -60,16 +57,10 @@ void Game::reset()
     totalLines = 0;
     linesUntilNextLevel = 10;
 
-    if (nextShape)
-    {
-        delete nextShape;
-    }
-
     field.reset();
-    field.setShape(Shape::createRandom());
+    field.setShapeType(getRandomShapeType());
 
-    nextShape = Shape::createRandom();
-    nextShape->position = Point(100, 100);
+    nextShape = createRandomShape();
 }
 
 void Game::showTitleScreen()
@@ -130,10 +121,8 @@ void Game::update()
 
     if (!field.hasShape() && !field.isAnimating())
     {
-        field.setShape(nextShape);
-
-        nextShape = Shape::createRandom();
-        nextShape->position = Point(100, 100);
+        field.setShapeType(nextShape.getType());
+        nextShape = createRandomShape();
     }
 
     if (field.update())
@@ -310,16 +299,12 @@ void Game::render()
     if (state == GameState::InGame)
     {
         field.render(graphics);
-
-        if (nextShape)
-        {
-            nextShape->render(graphics);
-        }
+        nextShape.render(graphics);
     }
     else if (state == GameState::Title)
     {
         field.drawOutline(graphics);
-        graphics.renderImage(ImageId::Logo, Point(582, 242));
+        graphics.renderImage(ImageId::Logo, LOGO_POSITION);
     }
 
     statusPanel.setLevel(level);
@@ -328,4 +313,14 @@ void Game::render()
     statusPanel.render(graphics);
 
     graphics.update();
+}
+
+ShapeType Game::getRandomShapeType()
+{
+    return (ShapeType)(rand() % (int)ShapeType::Count);
+}
+
+Shape Game::createRandomShape()
+{
+    return Shape(getRandomShapeType(), NEXT_SHAPE_POSITION);
 }

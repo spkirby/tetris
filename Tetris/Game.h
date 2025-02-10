@@ -13,7 +13,6 @@ class Game
 {
 public:
     Game(Graphics& graphics, Sound& sound);
-    virtual ~Game();
     void start();
     void play();
     void render();
@@ -23,6 +22,10 @@ protected:
     static const int TIME_PER_FRAME = 1000 / FRAMES_PER_SECOND;
     static const int INITIAL_FALL_DELAY = 20;
     static const int MOVE_COOLDOWN_TIME = 2;
+    static const Point FIELD_POSITION;
+    static const Point LOGO_POSITION;
+    static const Point NEXT_SHAPE_POSITION;
+    static const Point STATUS_PANEL_POSITION;
 
     int fallCooldown;
     int fallDelay;
@@ -32,7 +35,7 @@ protected:
     int level;
     int linesUntilNextLevel;
     int moveCooldown;
-    Shape* nextShape;
+    Shape nextShape;
     bool rotateLocked;
     int score;
     Sound& sound;
@@ -42,7 +45,9 @@ protected:
 
     void checkForCompletedLines();
     void checkForPlayerMove();
+    Shape createRandomShape();
     void endFrame(Uint32 frameStart);
+    ShapeType getRandomShapeType();
     void handleEvent(SDL_Event &event);
     void pollEvents();
     void reset();
