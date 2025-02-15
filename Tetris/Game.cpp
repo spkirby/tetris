@@ -274,6 +274,15 @@ void Game::handleEvent(SDL_Event& event)
                     break;
             }
             break;
+        
+        case SDL_WINDOWEVENT:
+            switch (event.window.event)
+            {
+                case SDL_WINDOWEVENT_RESIZED:
+                    render();
+                    break;
+            }
+            break;
     }
 }
 

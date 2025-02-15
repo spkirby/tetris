@@ -24,7 +24,9 @@ SDL_Rect Graphics::digitRects[10] =
 
 Graphics::Graphics()
 {
-    SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, 0, &window, &renderer);
+    SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer);
+    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
     SDL_SetWindowTitle(window, "Tetris");
     setIcon();
     loadImages();
