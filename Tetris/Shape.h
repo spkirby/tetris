@@ -1,5 +1,4 @@
 #pragma once
-#include "Entity.h"
 #include "Enums.h"
 #include "Graphics.h"
 #include "Point.h"
@@ -16,7 +15,7 @@ enum class ShapeType
     Count
 };
 
-class Shape : public Entity
+class Shape
 {
 public:
     static const int MAX_WIDTH = 3;
@@ -36,7 +35,7 @@ public:
 protected:
     // Array containing all rotations of all shapes.
     // Shapes (7) x rotations (4) x width (4) x height (4)
-    static const int shapes[(int)ShapeType::Count][4][4][4];
+    static const unsigned char shapes[(int)ShapeType::Count][4][4][4];
 
     ShapeType shapeType;
     int rotation;

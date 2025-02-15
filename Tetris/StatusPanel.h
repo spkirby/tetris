@@ -1,12 +1,13 @@
 #pragma once
-#include "Entity.h"
 #include "StatusNumber.h"
 
-class StatusPanel : public Entity
+class StatusPanel
 {
 public:
+    Point position;
+
     StatusPanel();
-    virtual void render(Graphics& graphics) override;
+    void render(Graphics& graphics);
     void setLevel(int level);
     void setLines(int lines);
     void setScore(int score);

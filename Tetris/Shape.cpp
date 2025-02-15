@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <stdexcept>
 
-const int Shape::shapes[(int)ShapeType::Count][4][4][4] =
+const unsigned char Shape::shapes[(int)ShapeType::Count][4][4][4] =
 {
     // I
     {
@@ -249,7 +249,7 @@ void Shape::render(Graphics& graphics)
         {
             ImageId block = getShapeBlock(x, y);
 
-            if (block != ImageId::BlockEmpty /*&& gridPos.y + y >= PlayField::FIELD_VIS_TOP*/)
+            if (block != ImageId::BlockEmpty)
             {
                 Point offset(x * BLOCK_SIZE, y * BLOCK_SIZE);
                 graphics.renderImage(block, position + offset);

@@ -1,17 +1,18 @@
 #pragma once
-#include "Entity.h"
 #include "Point.h"
 #include "SDL.h"
 
-class StatusNumber : public Entity
+class StatusNumber
 {
 public:
+    Point position;
+
     StatusNumber();
-    virtual void render(Graphics& graphics) override;
+    void render(Graphics& graphics);
     void setValue(unsigned int value);
 
 protected:
     unsigned int value;
-    char buffer[7];
+    char buffer[8];
 };
 

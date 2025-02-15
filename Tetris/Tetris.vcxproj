@@ -115,7 +115,6 @@
     <ClCompile Include="StatusPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Entity.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameState.h" />

@@ -1,15 +1,16 @@
 #pragma once
 #include <array>
 #include <optional>
-#include "Entity.h"
 #include "Enums.h"
 #include "Graphics.h"
 #include "Point.h"
 #include "Shape.h"
 
-class PlayField : public Entity
+class PlayField
 {
 public:
+    Point position;
+
     PlayField();
     void drawOutline(Graphics& graphics);
     int getCompletedLineCount();

@@ -38,7 +38,6 @@ protected:
     void loadBlockImages();
     SDL_Surface* loadImageFile(const char* filename);
     SDL_Texture* loadTexture(const char* filename);
-    void render(SDL_Texture* texture, SDL_Rect* srcRect, SDL_Rect* destRect);
     void setIcon();
     SDL_Texture* setImage(ImageId imageId, SDL_Texture* image);
 };
